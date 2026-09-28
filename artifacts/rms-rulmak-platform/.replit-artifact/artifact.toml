@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "RMS Rulmak Kurumsal ve B2B Platformu"
+description = "RMS Rulmak için kurumsal ürün kataloğu, firma üyeliği, teklif ve ürün talepleri, doküman merkezi ve yönetim paneli altyapısını bir araya getiren web platformu."
+version = "1.0.0"
+id = "artifacts/rms-rulmak-platform"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26170
+
+[services.development]
+run = "pnpm --filter @workspace/rms-rulmak-platform run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rms-rulmak-platform", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rms-rulmak-platform/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26170"
+BASE_PATH = "/"

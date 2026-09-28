@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RMS Rulmak kurumsal web sitesi ve B2B portal API sözleşmesi
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: catalog
+    description: Public product catalog
+  - name: inquiries
+    description: Public inquiry forms
+  - name: dashboard
+    description: Public and B2B dashboard summaries
 paths:
   /healthz:
     get:
@@ -24,7 +30,175 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [catalog]
+      summary: List catalog products
+      parameters:
+        - $ref: "#/components/parameters/SearchQuery"
+        - $ref: "#/components/parameters/CategorySlug"
+        - $ref: "#/components/parameters/BrandSlug"
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 48
+            default: 12
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductList"
+  /products/{slug}:
+    get:
+      operationId: getProduct
+      tags: [catalog]
+      summary: Get a product by slug
+      parameters:
+        - $ref: "#/components/parameters/ProductSlug"
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [catalog]
+      summary: List product categories
+      responses:
+        "200":
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+  /brands:
+    get:
+      operationId: listBrands
+      tags: [catalog]
+      summary: List product brands
+      responses:
+        "200":
+          description: Brand list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Brand"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get catalog dashboard summary
+      responses:
+        "200":
+          description: Summary of catalog and service capabilities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /contact-messages:
+    post:
+      operationId: createContactMessage
+      tags: [inquiries]
+      summary: Submit a public contact message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactMessageInput"
+      responses:
+        "201":
+          description: Contact message received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionReceipt"
+        "400":
+          description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /product-requests:
+    post:
+      operationId: createProductRequest
+      tags: [inquiries]
+      summary: Submit a public product information request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductRequestInput"
+      responses:
+        "201":
+          description: Product request received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionReceipt"
+        "400":
+          description: Invalid form data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
+  parameters:
+    SearchQuery:
+      name: q
+      in: query
+      description: Product name, product code, OEM code, brand or stock code
+      schema:
+        type: string
+        maxLength: 120
+    CategorySlug:
+      name: category
+      in: query
+      schema:
+        type: string
+        maxLength: 80
+    BrandSlug:
+      name: brand
+      in: query
+      schema:
+        type: string
+        maxLength: 80
+    ProductSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +207,279 @@ components:
           type: string
       required:
         - status
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        brand:
+          $ref: "#/components/schemas/Brand"
+        category:
+          $ref: "#/components/schemas/Category"
+        shortDescription:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        technicalSpecs:
+          type: array
+          items:
+            $ref: "#/components/schemas/TechnicalSpec"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentLink"
+        featured:
+          type: boolean
+      required:
+        - id
+        - slug
+        - name
+        - code
+        - brand
+        - category
+        - shortDescription
+        - description
+        - imageUrl
+        - technicalSpecs
+        - documents
+        - featured
+    ProductListItem:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        brandName:
+          type: string
+        brandSlug:
+          type: string
+        categoryName:
+          type: string
+        categorySlug:
+          type: string
+        shortDescription:
+          type: string
+        imageUrl:
+          type: string
+        featured:
+          type: boolean
+      required:
+        - id
+        - slug
+        - name
+        - code
+        - brandName
+        - brandSlug
+        - categoryName
+        - categorySlug
+        - shortDescription
+        - imageUrl
+        - featured
+    ProductList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductListItem"
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+        - items
+        - total
+        - limit
+        - offset
+    TechnicalSpec:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+      required:
+        - label
+        - value
+    DocumentLink:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        url:
+          type: string
+      required:
+        - title
+        - type
+        - url
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        productCount:
+          type: integer
+      required:
+        - id
+        - slug
+        - name
+        - description
+        - productCount
+    Brand:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        logoUrl:
+          type: string
+        productCount:
+          type: integer
+      required:
+        - id
+        - slug
+        - name
+        - description
+        - logoUrl
+        - productCount
+    DashboardSummary:
+      type: object
+      properties:
+        productCount:
+          type: integer
+        brandCount:
+          type: integer
+        categoryCount:
+          type: integer
+        sectorCount:
+          type: integer
+        sectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sector"
+        featuredProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductListItem"
+      required:
+        - productCount
+        - brandCount
+        - categoryCount
+        - sectorCount
+        - sectors
+        - featuredProducts
+    Sector:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - slug
+        - description
+    ContactMessageInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+        company:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        subject:
+          type: string
+          minLength: 2
+        message:
+          type: string
+          minLength: 10
+        kvkkAccepted:
+          type: boolean
+      required:
+        - fullName
+        - email
+        - subject
+        - message
+        - kvkkAccepted
+    ProductRequestInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+        company:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        productSlug:
+          type: string
+        productCode:
+          type: string
+        message:
+          type: string
+          minLength: 10
+        kvkkAccepted:
+          type: boolean
+      required:
+        - fullName
+        - email
+        - productSlug
+        - productCode
+        - message
+        - kvkkAccepted
+    SubmissionReceipt:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+      required:
+        - id
+        - message
 

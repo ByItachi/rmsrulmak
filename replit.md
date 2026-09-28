@@ -1,6 +1,6 @@
-# [Project name]
+# RMS Rulmak Kurumsal ve B2B Platformu
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+RMS Rulmak için teknik ürün kataloğu, kurumsal içerik ve B2B müşteri ilişkilerini bir araya getiren web platformu.
 
 ## Run & Operate
 
@@ -22,23 +22,40 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/rms-rulmak-platform` — public corporate site, catalog, B2B and admin UI
+- `artifacts/api-server` — Express API for catalog and inquiry submissions
+- `lib/api-spec/openapi.yaml` — API contract source of truth
+- `lib/db/src/schema/index.ts` — Drizzle database schema
+- `artifacts/rms-rulmak-platform/src/index.css` — RMS design tokens and global styles
+- `artifacts/rms-rulmak-platform/public/brand` — local RMS logo and icon assets
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The public product experience is a technical catalog and inquiry flow, not an ecommerce checkout.
+- Product, category, brand, dashboard, contact and product-request data are served through the shared OpenAPI-first API.
+- RMS brand assets are stored locally and reused for light, dark and compact contexts instead of remote hotlinks.
+- B2B and admin surfaces are part of the same frontend route tree so the first build can share authentication and navigation patterns.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Corporate homepage and company information
+- Searchable product catalog with technical product detail pages
+- Brand, category and sector discovery
+- Contact and product information request forms
+- B2B login, registration and dashboard shells
+- Admin dashboard shell for the next CRUD/auth phase
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Use RMS Rulmak supplied logo and favicon assets without redesigning them.
+- Keep all visible copy in Turkish.
+- Do not add ecommerce checkout, cart, payment or online-order behavior.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The API server is mounted behind `/api`; use the shared proxy rather than direct service ports.
+- Run API codegen after changing `lib/api-spec/openapi.yaml`.
+- The frontend requires workflow-provided `PORT` and `BASE_PATH` values.
 
 ## Pointers
 
