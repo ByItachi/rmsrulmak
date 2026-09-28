@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCreateContactMessage, useCreateProductRequest, useGetDashboardSummary, useGetProduct, useListBrands, useListCategories, useListProducts } from '@workspace/api-client-react';
 import type { Brand, Category, Product, ProductListItem, Sector } from '@workspace/api-client-react';
-import { ArrowDownRight, ArrowRight, BarChart3, BookOpen, Building2, Check, ChevronRight, CircleAlert, Factory, FileText, Filter, Gauge, Headphones, Layers3, Loader2, Mail, MapPin, Menu, PackageSearch, Phone, Search, ShieldCheck, Sparkles, Target, Users, X } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BarChart3, BookOpen, Building2, Check, ChevronLeft, ChevronRight, CircleAlert, Factory, FileText, Filter, Gauge, Headphones, Layers3, Loader2, Mail, MapPin, Menu, PackageSearch, Phone, Search, ShieldCheck, Sparkles, Target, Users, X } from 'lucide-react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -85,14 +85,135 @@ function ProductVisual({ src, name }: { src?: string; name: string }) {
   return <div className="relative flex h-48 items-center justify-center overflow-hidden bg-muted/55 p-6"><div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, hsl(var(--primary) / .2) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />{src ? <img src={src} alt={name} className="relative z-10 h-full w-full object-contain mix-blend-multiply" /> : <img src={redIcon} alt="" className="relative z-10 h-20 w-20 object-contain opacity-70" />}</div>;
 }
 
+const referenceSlides = [
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/2-1536x456.jpg', label: 'IDC hassas rulman çözümleri', href: '/markalar?brand=idc' },
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/1-1536x456.jpg', label: 'Gates güç aktarım ürünleri', href: '/markalar?brand=gates' },
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/3-1536x456.jpg', label: 'Dunlop endüstriyel çözümleri', href: '/markalar?brand=dunlop' },
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/4-1536x456.jpg', label: 'NTN rulman teknolojisi', href: '/markalar?brand=ntn' },
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/7-1536x456.jpg', label: 'Schaeffler mühendisliği', href: '/markalar?brand=schaeffler' },
+  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/8-1536x456.jpg', label: 'Rulmak teknik katalog', href: '/urunler' },
+] as const;
+
+const referenceBrands = [
+  { name: 'IDC', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/idc-300x300.jpg', href: '/markalar?brand=idc' },
+  { name: 'Gates', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/gates-300x300.jpg', href: '/markalar?brand=gates' },
+  { name: 'Dunlop', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/dunlop-300x300.jpg', href: '/markalar?brand=dunlop' },
+  { name: 'NTN', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/ntn-300x300.jpg', href: '/markalar?brand=ntn' },
+  { name: 'NSK', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/nsk-300x300.jpg', href: '/markalar?brand=nsk' },
+  { name: 'Timken', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/timken-300x300.jpg', href: '/markalar?brand=timken' },
+  { name: 'Schaeffler', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/schaeffler-300x300.jpg', href: '/markalar?brand=schaeffler' },
+  { name: 'Koyo', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/koyo-300x300.jpg', href: '/markalar?brand=koyo' },
+] as const;
+
+function ReferenceHeroSlider() {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % referenceSlides.length);
+    }, 5200);
+    return () => window.clearInterval(timer);
+  }, [paused]);
+
+  const goTo = (index: number) => setActive((index + referenceSlides.length) % referenceSlides.length);
+  const slide = referenceSlides[active];
+
+  return <section
+    aria-label="RMS Rulmak öne çıkan marka ve ürün sliderı"
+    className="relative overflow-hidden border-b border-border bg-white"
+    onMouseEnter={() => setPaused(true)}
+    onMouseLeave={() => setPaused(false)}
+  >
+    <div className="relative aspect-[2560/760] min-h-[220px] w-full overflow-hidden sm:min-h-[280px] lg:min-h-[390px]">
+      {referenceSlides.map((item, index) => <Link
+        key={item.image}
+        href={item.href}
+        aria-label={item.label}
+        aria-hidden={active !== index}
+        tabIndex={active === index ? 0 : -1}
+        className={`absolute inset-0 block transition-opacity duration-700 ${active === index ? 'z-10 opacity-100' : 'pointer-events-none opacity-0'}`}
+      >
+        <img
+          src={item.image}
+          alt={item.label}
+          className="h-full w-full object-cover"
+          loading={index === 0 ? 'eager' : 'lazy'}
+        />
+      </Link>)}
+      <button
+        type="button"
+        aria-label="Önceki slider görseli"
+        data-testid="button-hero-slider-prev"
+        onClick={() => goTo(active - 1)}
+        className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-primary shadow-lg transition hover:bg-white sm:left-6"
+      >
+        <ChevronLeft size={22} />
+      </button>
+      <button
+        type="button"
+        aria-label="Sonraki slider görseli"
+        data-testid="button-hero-slider-next"
+        onClick={() => goTo(active + 1)}
+        className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-primary shadow-lg transition hover:bg-white sm:right-6"
+      >
+        <ChevronRight size={22} />
+      </button>
+      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2 rounded-full bg-black/35 px-3 py-2 backdrop-blur-sm">
+        {referenceSlides.map((item, index) => <button
+          key={item.image}
+          type="button"
+          aria-label={`${index + 1}. slider görseline git`}
+          aria-current={active === index}
+          data-testid={`button-hero-slider-dot-${index}`}
+          onClick={() => goTo(index)}
+          className={`h-2 rounded-full transition-all ${active === index ? 'w-7 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`}
+        />)}
+      </div>
+    </div>
+  </section>;
+}
+
+function ReferenceBrandSlider() {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollBrands = (direction: number) => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollBy({ left: direction * viewport.clientWidth * 0.85, behavior: 'smooth' });
+  };
+
+  return <section className="border-b border-border bg-background">
+    <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div><p className="eyebrow">Yetkili marka portföyü</p><h2 className="mt-2 font-display text-2xl font-semibold">Güvendiğimiz üreticiler</h2></div>
+        <div className="flex gap-2">
+          <button type="button" aria-label="Önceki markalar" data-testid="button-brand-slider-prev" onClick={() => scrollBrands(-1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-primary transition hover:border-primary"><ChevronLeft size={18} /></button>
+          <button type="button" aria-label="Sonraki markalar" data-testid="button-brand-slider-next" onClick={() => scrollBrands(1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-primary transition hover:border-primary"><ChevronRight size={18} /></button>
+        </div>
+      </div>
+      <div ref={viewportRef} className="brand-slider-viewport">
+        <div className="brand-slider-track">
+          {referenceBrands.map((brand) => <Link key={brand.name} href={brand.href} data-testid={`link-brand-slider-${brand.name.toLowerCase()}`} className="brand-slider-card group flex flex-col items-center justify-center rounded-lg border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-md">
+            <img src={brand.image} alt={`${brand.name} logo`} className="h-16 w-full object-contain grayscale transition duration-300 group-hover:grayscale-0" loading="lazy" />
+            <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{brand.name}</span>
+          </Link>)}
+        </div>
+      </div>
+    </div>
+  </section>;
+}
+
 function Home() {
   const summaryQuery = useGetDashboardSummary();
   const summary = summaryQuery.data;
   return <Shell>
     <main>
+      <ReferenceHeroSlider />
+      <ReferenceBrandSlider />
       <section className="relative overflow-hidden bg-sidebar text-sidebar-foreground">
         <div className="absolute right-[-8%] top-[-45%] h-[850px] w-[850px] rounded-full border border-white/10" /><div className="absolute right-[5%] top-[-30%] h-[580px] w-[580px] rounded-full border border-primary/40 hero-orbit" /><div className="absolute right-[15%] top-[8%] h-3 w-3 rounded-full bg-accent shadow-[0_0_0_12px_hsl(36_80%_58%/.1)]" />
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-24 lg:grid-cols-[1fr_.72fr] lg:px-8 lg:py-36">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-20 lg:grid-cols-[1fr_.72fr] lg:px-8 lg:py-28">
           <div className="relative z-10"><p className="eyebrow reveal !text-red-400">Rulmak Endüstriyel Çözümler</p><h1 className="font-display reveal reveal-delay-1 mt-6 max-w-3xl text-5xl font-semibold leading-[.98] tracking-[-.055em] md:text-7xl">Dönüşün olduğu her yerde <span className="text-red-400">güven</span> var.</h1><p className="reveal reveal-delay-2 mt-7 max-w-xl text-lg leading-8 text-sidebar-foreground/65">Rulman ve güç aktarımında doğru ürünü, doğru teknik bilgiyle buluşturuyoruz. Üretiminiz durmasın diye.</p><div className="reveal reveal-delay-3 mt-9 flex flex-wrap gap-3"><Link href="/urunler" data-testid="link-hero-products" className="inline-flex items-center gap-3 rounded-md bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90">Kataloğu keşfet <ArrowRight size={17} /></Link><Link href="/iletisim" data-testid="link-hero-contact" className="inline-flex items-center gap-3 rounded-md border border-white/20 px-5 py-3.5 text-sm font-bold text-white hover:border-white/45">Teknik destek iste <Headphones size={17} /></Link></div></div>
           <div className="relative z-10 hidden justify-end lg:flex"><div className="w-[330px] rotate-3 border border-white/15 bg-white/[.04] p-5 backdrop-blur-sm"><div className="flex items-center justify-between border-b border-white/10 pb-4"><span className="text-xs uppercase tracking-[.2em] text-white/50">RMS / 2024</span><span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary"><Target size={15} /></span></div><div className="py-16"><img src={whiteLogo} alt="RMS Rulmak" className="w-full" /><p className="mt-7 text-sm leading-6 text-white/55">Hareket, hassasiyet ve süreklilik için mühendislik.</p></div><div className="flex justify-between border-t border-white/10 pt-4 text-xs text-white/45"><span>TEKNİK KATALOG</span><span>01 — 24</span></div></div></div>
         </div>
