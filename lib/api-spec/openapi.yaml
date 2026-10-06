@@ -3,7 +3,7 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: RMS Rulmak kurumsal web sitesi ve B2B portal API sözleşmesi
+  description: RMS Rulmak kurumsal web sitesi, halka açık kataloglar ve yönetici API sözleşmesi
 servers:
   - url: /api
     description: Base API path
@@ -15,7 +15,11 @@ tags:
   - name: inquiries
     description: Public inquiry forms
   - name: dashboard
-    description: Public and B2B dashboard summaries
+    description: Public catalog summaries
+  - name: Auth
+    description: Staff authentication endpoints
+  - name: catalogs
+    description: Public downloadable catalogs and restricted catalog management
 paths:
   /healthz:
     get:
@@ -30,6 +34,266 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the current authenticated user
+      parameters:
+        - $ref: "#/components/parameters/AuthorizationSessionHeader"
+        - $ref: "#/components/parameters/SessionCookie"
+      responses:
+        "200":
+          description: Current auth state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the staff OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to the OIDC authorization endpoint
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: iss
+          in: query
+          schema:
+            type: string
+            format: uri
+      responses:
+        "302":
+          description: Redirect after authentication
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the staff session
+      parameters:
+        - $ref: "#/components/parameters/AuthorizationSessionHeader"
+        - $ref: "#/components/parameters/SessionCookie"
+        - name: returnTo
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect after logout
+  /mobile-auth/token-exchange:
+    post:
+      tags: [Auth]
+      operationId: exchangeMobileAuthorizationCode
+      summary: Exchange a mobile OIDC code for a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MobileTokenExchangeRequest"
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MobileTokenExchangeSuccess"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Invalid identity token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Token exchange failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /mobile-auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutMobileSession
+      summary: Delete a mobile session token
+      parameters:
+        - $ref: "#/components/parameters/AuthorizationSessionHeader"
+      responses:
+        "200":
+          description: Logout processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutSuccess"
+  /catalogs:
+    get:
+      tags: [catalogs]
+      operationId: listCatalogs
+      summary: List published downloadable catalogs
+      responses:
+        "200":
+          description: Published catalogs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Catalog"
+    post:
+      tags: [catalogs]
+      operationId: createCatalogRecord
+      summary: Create a catalog record after uploading its PDF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCatalogBody"
+      responses:
+        "201":
+          description: Catalog created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid metadata or uploaded file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /catalogs/admin:
+    get:
+      tags: [catalogs]
+      operationId: listAdminCatalogs
+      summary: List all catalogs for an authorized manager
+      responses:
+        "200":
+          description: All catalog entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Catalog"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /catalogs/uploads/request-url:
+    post:
+      tags: [catalogs]
+      operationId: requestCatalogUploadUrl
+      summary: Request a temporary upload URL for a PDF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CatalogUploadUrlRequest"
+      responses:
+        "200":
+          description: Temporary upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogUploadUrlResponse"
+        "400":
+          description: Invalid upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /catalogs/{id}:
+    patch:
+      tags: [catalogs]
+      operationId: updateCatalogMetadata
+      summary: Update catalog details or publication state
+      parameters:
+        - $ref: "#/components/parameters/CatalogId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCatalogBody"
+      responses:
+        "200":
+          description: Updated catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Catalog not found
+    delete:
+      tags: [catalogs]
+      operationId: deleteCatalog
+      summary: Delete a catalog and its PDF
+      parameters:
+        - $ref: "#/components/parameters/CatalogId"
+      responses:
+        "204":
+          description: Catalog deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Catalog not found
+  /catalogs/{id}/download:
+    get:
+      tags: [catalogs]
+      operationId: downloadCatalog
+      summary: Download a published catalog PDF
+      parameters:
+        - $ref: "#/components/parameters/CatalogId"
+      responses:
+        "200":
+          description: PDF download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Catalog not found or unpublished
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /products:
     get:
       operationId: listProducts
@@ -173,6 +437,25 @@ paths:
                 $ref: "#/components/schemas/Error"
 components:
   parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      schema:
+        type: string
+    CatalogId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
     SearchQuery:
       name: q
       in: query
@@ -200,6 +483,170 @@ components:
         type: string
         minLength: 1
   schemas:
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, "null"]
+          format: email
+        firstName:
+          type: [string, "null"]
+        lastName:
+          type: [string, "null"]
+        profileImageUrl:
+          type: [string, "null"]
+      required: [id, email, firstName, lastName, profileImageUrl]
+    AuthUserEnvelope:
+      type: object
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+      required: [user]
+    MobileTokenExchangeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+        code_verifier:
+          type: string
+          minLength: 1
+        redirect_uri:
+          type: string
+          format: uri
+          minLength: 1
+        state:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+      required: [code, code_verifier, redirect_uri, state]
+    MobileTokenExchangeSuccess:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
+    LogoutSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          const: true
+      required: [success]
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Catalog:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+        published:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        downloadUrl:
+          type: string
+      required: [id, title, brand, category, description, fileName, fileSize, published, createdAt, downloadUrl]
+    CatalogUploadUrlRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+        contentType:
+          type: string
+          const: application/pdf
+      required: [name, size, contentType]
+    CatalogUploadUrlResponse:
+      type: object
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+      required: [uploadURL, objectPath]
+    CreateCatalogBody:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 180
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 80
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 1000
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        fileSize:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+        objectPath:
+          type: string
+          pattern: "^/objects/uploads/[0-9a-f-]{36}$"
+        published:
+          type: boolean
+          default: true
+      required: [title, brand, category, description, fileName, fileSize, objectPath, published]
+    UpdateCatalogBody:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 180
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 80
+        category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 1000
+        published:
+          type: boolean
     HealthStatus:
       type: object
       properties:

@@ -1,3 +1,6 @@
+export * from "./auth";
+export * from "./catalogs";
+
 import { createInsertSchema } from "drizzle-zod";
 import {
   boolean,

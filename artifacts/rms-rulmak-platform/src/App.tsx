@@ -3,12 +3,13 @@ import type { FormEvent, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCreateContactMessage, useCreateProductRequest, useGetDashboardSummary, useGetProduct, useListBrands, useListCategories, useListProducts } from '@workspace/api-client-react';
 import type { Brand, Category, Product, ProductListItem, Sector } from '@workspace/api-client-react';
-import { ArrowDownRight, ArrowRight, BarChart3, BookOpen, Building2, Check, ChevronLeft, ChevronRight, CircleAlert, Factory, FileText, Filter, Gauge, Headphones, Layers3, Loader2, Mail, MapPin, Menu, PackageSearch, Phone, Search, ShieldCheck, Sparkles, Target, Users, X } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BarChart3, BookOpen, Check, ChevronLeft, ChevronRight, CircleAlert, Factory, Filter, Gauge, Headphones, Layers3, Loader2, Mail, MapPin, Menu, PackageSearch, Phone, Search, ShieldCheck, Sparkles, Target, Users, X } from 'lucide-react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import { CatalogAdminPage, CatalogsPage } from '@/pages/catalogs';
 
 const queryClient = new QueryClient();
 const redLogo = '/brand/rulmak-red.png';
@@ -22,6 +23,7 @@ function Logo({ dark = false, compact = false }: { dark?: boolean; compact?: boo
 const navItems = [
   ['/urunler', 'Ürünler'],
   ['/markalar', 'Markalar'],
+  ['/kataloglar', 'Kataloglar'],
   ['/kategoriler', 'Kategoriler'],
   ['/sektorler', 'Sektörler'],
   ['/kurumsal', 'Kurumsal'],
@@ -38,8 +40,6 @@ function Header() {
       <button data-testid="button-mobile-menu" onClick={() => setOpen(!open)} className="rounded-lg p-2 text-foreground lg:hidden">{open ? <X size={22} /> : <Menu size={22} />}</button>
       <nav className={`${open ? 'absolute left-0 right-0 top-[76px] flex border-b border-border bg-background p-5 shadow-xl' : 'hidden'} flex-col gap-2 lg:static lg:flex lg:flex-row lg:items-center lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {navItems.map(([href, label]) => <Link key={href} href={href} onClick={() => setOpen(false)} data-testid={`link-nav-${label}`} className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:text-primary ${location === href ? 'text-primary' : 'text-muted-foreground'}`}>{label}</Link>)}
-        <span className="my-2 hidden h-6 w-px bg-border lg:block" />
-        <Link href="/b2b/giris" data-testid="link-b2b-login" className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-transform hover:-translate-y-0.5">B2B Girişi <ArrowRight size={15} /></Link>
       </nav>
     </div>
   </header>;
@@ -50,8 +50,8 @@ function Footer() {
     <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-[1.2fr_.8fr_.8fr_1fr] lg:px-8">
       <div><Logo dark /><p className="mt-5 max-w-xs text-sm leading-7 text-sidebar-foreground/65">Hareketin devamlılığı için doğru teknik çözüm. Rulman ve güç aktarımında güvenilir iş ortağınız.</p><div className="mt-6 flex gap-2 text-xs text-sidebar-foreground/50"><span>© 2024 RMS Rulmak</span><span>•</span><span>İstanbul, Türkiye</span></div></div>
       <div><p className="eyebrow !text-red-400">Keşfet</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70">{navItems.slice(0, 4).map(([href, label]) => <Link key={href} href={href} data-testid={`link-footer-${label}`} className="transition-colors hover:text-white">{label}</Link>)}</div></div>
-      <div><p className="eyebrow !text-red-400">B2B dünya</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70"><Link href="/b2b/giris" data-testid="link-footer-b2b-login">B2B müşteri girişi</Link><Link href="/b2b/kayit" data-testid="link-footer-b2b-register">Firma kaydı</Link><Link href="/iletisim" data-testid="link-footer-support">Teknik destek</Link></div></div>
-      <div><p className="eyebrow !text-red-400">Bize ulaşın</p><div className="mt-4 space-y-3 text-sm text-sidebar-foreground/70"><p className="flex gap-2"><Phone size={15} className="mt-0.5 text-red-400" /> +90 (216) 000 00 00</p><p className="flex gap-2"><Mail size={15} className="mt-0.5 text-red-400" /> satis@rmsrulmak.com</p><p className="flex gap-2"><MapPin size={15} className="mt-0.5 text-red-400" /> İstanbul, Türkiye</p></div></div>
+      <div><p className="eyebrow !text-red-400">Kurumsal</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70"><Link href="/kurumsal">Hakkımızda</Link><Link href="/kataloglar">Katalog arşivi</Link><Link href="/yonetim/kataloglar" data-testid="link-footer-catalog-admin">Yönetici paneli</Link><Link href="/iletisim" data-testid="link-footer-support">Teknik destek</Link></div></div>
+      <div><p className="eyebrow !text-red-400">Bize ulaşın</p><div className="mt-4 space-y-3 text-sm text-sidebar-foreground/70"><a className="flex gap-2 hover:text-white" href="tel:+902163924141"><Phone size={15} className="mt-0.5 text-red-400" /> +90 216 392 41 41</a><a className="flex gap-2 hover:text-white" href="mailto:info@rmsrulmak.com"><Mail size={15} className="mt-0.5 text-red-400" /> info@rmsrulmak.com</a><p className="flex gap-2"><MapPin size={15} className="mt-0.5 text-red-400" /> Şifa Mah. Şekerpınar Cad. No: 11 4/B, Tuzla / İstanbul</p></div></div>
     </div>
     <div className="border-t border-sidebar-border px-5 py-4 text-center text-xs text-sidebar-foreground/45">RMS Rulmak — Endüstriyel güven, ölçülebilir performans.</div>
   </footer>;
@@ -86,23 +86,19 @@ function ProductVisual({ src, name }: { src?: string; name: string }) {
 }
 
 const referenceSlides = [
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/2-1536x456.jpg', label: 'IDC hassas rulman çözümleri', href: '/markalar?brand=idc' },
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/1-1536x456.jpg', label: 'Gates güç aktarım ürünleri', href: '/markalar?brand=gates' },
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/3-1536x456.jpg', label: 'Dunlop endüstriyel çözümleri', href: '/markalar?brand=dunlop' },
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/4-1536x456.jpg', label: 'NTN rulman teknolojisi', href: '/markalar?brand=ntn' },
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/7-1536x456.jpg', label: 'Schaeffler mühendisliği', href: '/markalar?brand=schaeffler' },
-  { image: 'https://www.rmsrulmak.com/wp-content/uploads/2025/10/8-1536x456.jpg', label: 'Rulmak teknik katalog', href: '/urunler' },
+  { image: '/brand/reference/hero-idc.jpg', label: 'IDC hassas rulman çözümleri', href: '/markalar#idc' },
+  { image: '/brand/reference/hero-gates.jpg', label: 'Gates güç aktarım ürünleri', href: '/markalar#gates' },
+  { image: '/brand/reference/hero-dunlop.jpg', label: 'Dunlop endüstriyel çözümleri', href: '/markalar#dunlop' },
+  { image: '/brand/reference/hero-ntn.jpg', label: 'NTN rulman teknolojisi', href: '/markalar#ntn' },
+  { image: '/brand/reference/hero-nsk.jpg', label: 'NSK hassas rulman çözümleri', href: '/markalar#nsk' },
 ] as const;
 
 const referenceBrands = [
-  { name: 'IDC', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/idc-300x300.jpg', href: '/markalar?brand=idc' },
-  { name: 'Gates', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/gates-300x300.jpg', href: '/markalar?brand=gates' },
-  { name: 'Dunlop', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/dunlop-300x300.jpg', href: '/markalar?brand=dunlop' },
-  { name: 'NTN', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/ntn-300x300.jpg', href: '/markalar?brand=ntn' },
-  { name: 'NSK', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/nsk-300x300.jpg', href: '/markalar?brand=nsk' },
-  { name: 'Timken', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/timken-300x300.jpg', href: '/markalar?brand=timken' },
-  { name: 'Schaeffler', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/schaeffler-300x300.jpg', href: '/markalar?brand=schaeffler' },
-  { name: 'Koyo', image: 'https://www.rmsrulmak.com/wp-content/uploads/2026/09/koyo-300x300.jpg', href: '/markalar?brand=koyo' },
+  { name: 'IDC', image: '/brand/reference/idc.jpg', href: '/markalar#idc' },
+  { name: 'Gates', image: '/brand/reference/gates.jpg', href: '/markalar#gates' },
+  { name: 'Dunlop', image: '/brand/reference/dunlop.jpg', href: '/markalar#dunlop' },
+  { name: 'NTN', image: '/brand/reference/ntn.jpg', href: '/markalar#ntn' },
+  { name: 'NSK', image: '/brand/reference/nsk.jpg', href: '/markalar#nsk' },
 ] as const;
 
 function ReferenceHeroSlider() {
@@ -214,8 +210,8 @@ function Home() {
       <section className="relative overflow-hidden bg-sidebar text-sidebar-foreground">
         <div className="absolute right-[-8%] top-[-45%] h-[850px] w-[850px] rounded-full border border-white/10" /><div className="absolute right-[5%] top-[-30%] h-[580px] w-[580px] rounded-full border border-primary/40 hero-orbit" /><div className="absolute right-[15%] top-[8%] h-3 w-3 rounded-full bg-accent shadow-[0_0_0_12px_hsl(36_80%_58%/.1)]" />
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-20 lg:grid-cols-[1fr_.72fr] lg:px-8 lg:py-28">
-          <div className="relative z-10"><p className="eyebrow reveal !text-red-400">Rulmak Endüstriyel Çözümler</p><h1 className="font-display reveal reveal-delay-1 mt-6 max-w-3xl text-5xl font-semibold leading-[.98] tracking-[-.055em] md:text-7xl">Dönüşün olduğu her yerde <span className="text-red-400">güven</span> var.</h1><p className="reveal reveal-delay-2 mt-7 max-w-xl text-lg leading-8 text-sidebar-foreground/65">Rulman ve güç aktarımında doğru ürünü, doğru teknik bilgiyle buluşturuyoruz. Üretiminiz durmasın diye.</p><div className="reveal reveal-delay-3 mt-9 flex flex-wrap gap-3"><Link href="/urunler" data-testid="link-hero-products" className="inline-flex items-center gap-3 rounded-md bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90">Kataloğu keşfet <ArrowRight size={17} /></Link><Link href="/iletisim" data-testid="link-hero-contact" className="inline-flex items-center gap-3 rounded-md border border-white/20 px-5 py-3.5 text-sm font-bold text-white hover:border-white/45">Teknik destek iste <Headphones size={17} /></Link></div></div>
-          <div className="relative z-10 hidden justify-end lg:flex"><div className="w-[330px] rotate-3 border border-white/15 bg-white/[.04] p-5 backdrop-blur-sm"><div className="flex items-center justify-between border-b border-white/10 pb-4"><span className="text-xs uppercase tracking-[.2em] text-white/50">RMS / 2024</span><span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary"><Target size={15} /></span></div><div className="py-16"><img src={whiteLogo} alt="RMS Rulmak" className="w-full" /><p className="mt-7 text-sm leading-6 text-white/55">Hareket, hassasiyet ve süreklilik için mühendislik.</p></div><div className="flex justify-between border-t border-white/10 pt-4 text-xs text-white/45"><span>TEKNİK KATALOG</span><span>01 — 24</span></div></div></div>
+          <div className="relative z-10"><p className="eyebrow reveal !text-red-400">Rulmak Endüstriyel Çözümler</p><h1 className="font-display reveal reveal-delay-1 mt-6 max-w-3xl text-5xl font-semibold leading-[.98] tracking-[-.055em] md:text-7xl">Dönüşün olduğu her yerde <span className="text-red-400">güven</span> var.</h1><p className="reveal reveal-delay-2 mt-7 max-w-xl text-lg leading-8 text-sidebar-foreground/65">Rulman ve güç aktarımında doğru ürünü, doğru teknik bilgiyle buluşturuyoruz. Üretiminiz durmasın diye.</p><div className="reveal reveal-delay-3 mt-9 flex flex-wrap gap-3"><Link href="/kataloglar" data-testid="link-hero-products" className="inline-flex items-center gap-3 rounded-md bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90">Katalogları incele <ArrowRight size={17} /></Link><Link href="/iletisim" data-testid="link-hero-contact" className="inline-flex items-center gap-3 rounded-md border border-white/20 px-5 py-3.5 text-sm font-bold text-white hover:border-white/45">Teknik destek iste <Headphones size={17} /></Link></div></div>
+          <div className="relative z-10 hidden justify-end lg:flex"><div className="w-[330px] rotate-3 border border-white/15 bg-white/[.04] p-5 backdrop-blur-sm"><div className="flex items-center justify-between border-b border-white/10 pb-4"><span className="text-xs uppercase tracking-[.2em] text-white/50">RMS RULMAK</span><span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary"><Target size={15} /></span></div><div className="py-16"><img src={whiteLogo} alt="RMS Rulmak" className="w-full" /><p className="mt-7 text-sm leading-6 text-white/55">Hareket, hassasiyet ve süreklilik için mühendislik.</p></div><div className="flex justify-between border-t border-white/10 pt-4 text-xs text-white/45"><span>TEKNİK KATALOG</span><Link href="/kataloglar" className="hover:text-white">İNCELE ↗</Link></div></div></div>
         </div>
       </section>
       <section className="mx-auto grid max-w-7xl gap-9 px-5 py-16 lg:grid-cols-[.8fr_1.6fr] lg:px-8 lg:py-24"><div><p className="eyebrow">Neden Rulmak?</p><h2 className="industrial-rule mt-4 max-w-sm font-display text-4xl font-semibold leading-tight">Parçadan fazlası. Sürekliliğin ortağı.</h2></div><div className="grid gap-8 sm:grid-cols-3"><div className="lift rounded-xl border border-border bg-card p-6"><ShieldCheck className="text-primary" /><h3 className="mt-7 font-display text-xl font-semibold">Güvenilir tedarik</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Sektörünüze uygun markalar ve izlenebilir ürün bilgisi.</p></div><div className="lift rounded-xl border border-border bg-card p-6"><Sparkles className="text-primary" /><h3 className="mt-7 font-display text-xl font-semibold">Teknik netlik</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Karar vermeyi hızlandıran, sade ve doğru teknik içerik.</p></div><div className="lift rounded-xl border border-border bg-card p-6"><Users className="text-primary" /><h3 className="mt-7 font-display text-xl font-semibold">İnsan desteği</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Sorunuz olduğunda ulaşabileceğiniz gerçek bir ekip.</p></div></div></section>

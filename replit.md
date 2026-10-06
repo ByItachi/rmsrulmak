@@ -1,6 +1,6 @@
-# RMS Rulmak Kurumsal ve B2B Platformu
+# RMS Rulmak Kurumsal Web Sitesi
 
-RMS Rulmak için teknik ürün kataloğu, kurumsal içerik ve B2B müşteri ilişkilerini bir araya getiren web platformu.
+RMS Rulmak için rmsrulmak.com referans alınarak hazırlanan kurumsal web sitesi, teknik ürün kataloğu ve herkese açık indirilebilir katalog arşivi.
 
 ## Run & Operate
 
@@ -22,8 +22,8 @@ RMS Rulmak için teknik ürün kataloğu, kurumsal içerik ve B2B müşteri ili�
 
 ## Where things live
 
-- `artifacts/rms-rulmak-platform` — public corporate site, catalog, B2B and admin UI
-- `artifacts/api-server` — Express API for catalog and inquiry submissions
+- `artifacts/rms-rulmak-platform` — public corporate site, product/catalog pages and restricted catalog manager
+- `artifacts/api-server` — Express API for catalog files, products and inquiry submissions
 - `lib/api-spec/openapi.yaml` — API contract source of truth
 - `lib/db/src/schema/index.ts` — Drizzle database schema
 - `artifacts/rms-rulmak-platform/src/index.css` — RMS design tokens and global styles
@@ -33,8 +33,8 @@ RMS Rulmak için teknik ürün kataloğu, kurumsal içerik ve B2B müşteri ili�
 
 - The public product experience is a technical catalog and inquiry flow, not an ecommerce checkout.
 - Product, category, brand, dashboard, contact and product-request data are served through the shared OpenAPI-first API.
-- RMS brand assets are stored locally and reused for light, dark and compact contexts instead of remote hotlinks.
-- B2B and admin surfaces are part of the same frontend route tree so the first build can share authentication and navigation patterns.
+- RMS brand assets are sourced from rmsrulmak.com and stored locally for reliable loading.
+- There is no B2B customer sign-in, registration, or portal. Only the internal catalog manager is authenticated and restricted to explicitly allowlisted staff emails.
 
 ## Product
 
@@ -42,8 +42,8 @@ RMS Rulmak için teknik ürün kataloğu, kurumsal içerik ve B2B müşteri ili�
 - Searchable product catalog with technical product detail pages
 - Brand, category and sector discovery
 - Contact and product information request forms
-- B2B login, registration and dashboard shells
-- Admin dashboard shell for the next CRUD/auth phase
+- Public downloadable catalog archive with expandable rows
+- Staff-only catalog upload and publishing tools
 
 ## User preferences
 
