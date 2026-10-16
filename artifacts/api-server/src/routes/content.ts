@@ -2,6 +2,8 @@ import { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
 import {
   db,
+  menusTable,
+  menuItemsTable,
   pagesTable,
   postsTable,
   sectorsTable,
@@ -168,6 +170,30 @@ router.get("/settings/public", async (_req, res): Promise<void> => {
     if (row) out[key] = row.value;
   }
   res.json(out);
+});
+
+router.get("/menus", async (_req, res) => {
+  const menus = await db.select().from(menusTable).orderBy(asc(menusTable.position));
+  const items = await db.select().from(menuItemsTable).orderBy(asc(menuItemsTable.position));
+  res.json({
+    menus: menus.map((m) => ({
+      id: m.id,
+      slug: m.slug,
+      label: m.label,
+      items: items.filter((i) => i.menuId === m.id && !i.parentId && i.enabled).map((i) => ({
+        id: i.id,
+        label: i.label,
+        href: i.href,
+        openInNewTab: i.openInNewTab,
+        children: items.filter((c) => c.parentId === i.id && c.enabled).map((c) => ({
+          id: c.id,
+          label: c.label,
+          href: c.href,
+          openInNewTab: c.openInNewTab,
+        })),
+      })),
+    })),
+  });
 });
 
 router.get("/pages/:slug", async (req, res): Promise<void> => {

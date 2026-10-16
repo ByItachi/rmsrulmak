@@ -387,6 +387,7 @@ export function AdminContent() {
   if (location.startsWith("/admin/pages")) return <PagesAdmin />;
   if (location.startsWith("/admin/redirects")) return <RedirectsAdmin />;
   if (location.startsWith("/admin/users")) return <UsersAdmin />;
+  if (location.startsWith("/admin/menus")) return <MenusAdmin />;
   if (location.startsWith("/admin/audit")) return <AuditLogsAdmin />;
   return <AdminOverview />;
 }
@@ -937,6 +938,115 @@ function UsersAdmin() {
           {rows.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">Henüz kullanıcı yok.</td></tr>}
         </tbody>
       </table>
+    </div>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// Menus (header/footer DB menu builder)
+// ---------------------------------------------------------------------------
+interface AdminMenuItem { id?: number; label: string; href: string; openInNewTab: boolean; position?: number; children: AdminMenuItem[] }
+interface AdminMenu { id: number; label: string; slug: string; position: number; items: AdminMenuItem[] }
+
+function MenusAdmin() {
+  const qc = useQueryClient();
+  const [menus, setMenus] = useState<AdminMenu[]>([]);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [newMenuLabel, setNewMenuLabel] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/menus");
+      const data = (await res.json()) as AdminMenu[];
+      setMenus(data);
+      setActiveId((prev) => (prev && data.some((m) => m.id === prev) ? prev : (data[0]?.id ?? null)));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const active = menus.find((m) => m.id === activeId) ?? null;
+  const setActive = (patch: Partial<AdminMenu>) => setMenus((prev) => prev.map((m) => (m.id === activeId ? { ...m, ...patch } : m)));
+
+  const saveItems = async () => {
+    if (!active) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/menus/${active.id}/items`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: active.items.map((i, ix) => ({ label: i.label, href: i.href, openInNewTab: i.openInNewTab, position: ix + 1, children: i.children.map((c, ci) => ({ label: c.label, href: c.href, openInNewTab: c.openInNewTab, position: ci + 1 })) })) }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? "Kaydedilemedi");
+      window.alert("Menü kaydedildi ve sitede yayına alındı.");
+      await load();
+      qc.invalidateQueries({ queryKey: ["public-menus"] });
+    } catch (err) {
+      window.alert(String((err as Error).message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createMenu = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newMenuLabel.trim()) return;
+    const res = await fetch("/api/admin/menus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label: newMenuLabel }) });
+    if (res.ok) { setNewMenuLabel(""); await load(); }
+  };
+
+  const deleteMenu = async (menu: AdminMenu) => {
+    if (!window.confirm(`"${menu.label}" menüsü ve tüm öğeleri silinsin mi?`)) return;
+    await fetch(`/api/admin/menus/${menu.id}`, { method: "DELETE" });
+    await load();
+  };
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="animate-spin text-primary" /></div>;
+
+  return <div className="space-y-6">
+    <div><p className="eyebrow">Navigasyon</p><h2 className="mt-2 font-display text-2xl font-semibold">Menü yönetimi</h2><p className="mt-1 text-sm text-muted-foreground">Header ana menüsü ve footer sütunları buradan yönetilir. Değişiklikler kaydedildiğinde site genelinde anında geçerli olur.</p></div>
+    <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
+      <div className="space-y-2">
+        {menus.map((m) => <div key={m.id} className={`flex items-center justify-between gap-1 rounded-lg border p-3 text-sm ${m.id === activeId ? "border-primary bg-primary/5 font-bold text-primary" : "border-border bg-card"}`}>
+          <button type="button" data-testid={`menu-tab-${m.slug}`} onClick={() => setActiveId(m.id)} className="min-w-0 flex-1 text-left">{m.label}<span className="block text-[10px] font-normal text-muted-foreground">{m.items.length} öğe</span></button>
+          <button type="button" onClick={() => void deleteMenu(m)} title="Menüyü sil" className="rounded p-1 text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
+        </div>)}
+        <form onSubmit={createMenu} className="flex gap-1.5 pt-1">
+          <input value={newMenuLabel} onChange={(e) => setNewMenuLabel(e.target.value)} placeholder="Yeni menü adı" className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-2 text-xs" />
+          <button type="submit" title="Menü ekle" className="rounded-md bg-primary px-2.5 text-white"><Plus size={14} /></button>
+        </form>
+      </div>
+      {active ? <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-lg font-semibold">{active.label} <span className="ml-1 font-mono text-xs text-muted-foreground">/{active.slug}</span></h3>
+          <button type="button" onClick={() => void saveItems()} disabled={saving} data-testid="button-save-menu" className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50"><Save size={14} />{saving ? "Kaydediliyor..." : "Kaydet"}</button>
+        </div>
+        <div className="space-y-3">
+          {active.items.map((item, ix) => <div key={ix} data-testid={`menu-item-${ix}`} className="rounded-lg border border-border/70 bg-background/50 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <input value={item.label} onChange={(e) => { const items = [...active.items]; items[ix] = { ...item, label: e.target.value }; setActive({ items }); }} placeholder="Etiket" className="w-40 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm font-semibold" />
+              <input value={item.href} onChange={(e) => { const items = [...active.items]; items[ix] = { ...item, href: e.target.value }; setActive({ items }); }} placeholder="/sayfa" className="w-48 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-xs" />
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground"><input type="checkbox" checked={item.openInNewTab} onChange={(e) => { const items = [...active.items]; items[ix] = { ...item, openInNewTab: e.target.checked }; setActive({ items }); }} /> Yeni sekme</label>
+              <span className="flex-1" />
+              <button type="button" onClick={() => { const items = [...active.items]; items[ix] = { ...item, children: [...item.children, { label: "Yeni alt öğe", href: "/", openInNewTab: false, children: [] }] }; setActive({ items }); }} className="rounded p-1 text-primary hover:bg-primary/10" title="Alt öğe ekle"><Plus size={14} /></button>
+              <button type="button" onClick={() => setActive({ items: active.items.filter((_, i2) => i2 !== ix) })} className="rounded p-1 text-red-500 hover:bg-red-50" title="Öğeyi sil"><Trash2 size={14} /></button>
+            </div>
+            {item.children.length > 0 && <div className="mt-2 space-y-1.5 border-l-2 border-primary/20 pl-3">
+              {item.children.map((child, ci) => <div key={ci} className="flex flex-wrap items-center gap-2">
+                <input value={child.label} onChange={(e) => { const items = [...active.items]; items[ix].children[ci] = { ...child, label: e.target.value }; setActive({ items }); }} className="w-36 rounded-md border border-border bg-background px-2 py-1 text-xs" />
+                <input value={child.href} onChange={(e) => { const items = [...active.items]; items[ix].children[ci] = { ...child, href: e.target.value }; setActive({ items }); }} className="w-44 rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px]" />
+                <button type="button" onClick={() => { const items = [...active.items]; items[ix].children = items[ix].children.filter((_, i2) => i2 !== ci); setActive({ items }); }} className="rounded p-1 text-red-500 hover:bg-red-50"><Trash2 size={12} /></button>
+              </div>)}
+            </div>}
+          </div>)}
+        </div>
+        <button type="button" onClick={() => setActive({ items: [...active.items, { label: "Yeni öğe", href: "/", openInNewTab: false, children: [] }] })} className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-4 py-2 text-sm font-bold text-muted-foreground hover:border-primary hover:text-primary"><Plus size={14} /> Öğe ekle</button>
+      </div> : <div className="rounded-xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">Düzenlemek için soldan bir menü seçin.</div>}
     </div>
   </div>;
 }

@@ -7,6 +7,8 @@ import {
   categoriesTable,
   contactMessagesTable,
   mediaAssetsTable,
+  menusTable,
+  menuItemsTable,
   pagesTable,
   postsTable,
   productRequestsTable,
@@ -1368,4 +1370,65 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
     lastLoginAt: row.lastLoginAt,
     createdAt: row.createdAt,
   });
+});
+
+interface MenuItemsBody {
+  menuId?: number;
+  items?: { label: string; href: string; position?: number; openInNewTab?: boolean; children?: { label: string; href: string; position?: number; openInNewTab?: boolean }[] }[];
+}
+
+router.get("/admin/menus", async (_req, res): Promise<void> => {
+  const menus = await db.select().from(menusTable).orderBy(asc(menusTable.position), asc(menusTable.id));
+  const items = await db.select().from(menuItemsTable).orderBy(asc(menuItemsTable.position), asc(menuItemsTable.id));
+  res.json(menus.map((menu) => ({
+    ...menu,
+    items: items.filter((i) => i.menuId === menu.id && !i.parentId).map((i) => ({
+      ...i,
+      children: items.filter((c) => c.parentId === i.id).map((c) => ({ ...c })),
+    })),
+  })));
+});
+
+router.post("/admin/menus", async (req, res): Promise<void> => {
+  const body = req.body as { label: string; slug?: string; position?: number };
+  if (!body?.label?.trim()) { res.status(400).json({ message: "Menü adı zorunludur." }); return; }
+  const slug = body.slug?.trim() || slugify(body.label);
+  const row = await db.insert(menusTable).values({ label: body.label.trim(), slug, position: body.position ?? 0 }).returning();
+  res.status(201).json(row[0]);
+});
+
+router.patch("/admin/menus/:id", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const body = req.body as Partial<{ label: string; slug: string; position: number }>;
+  const row = await db.update(menusTable).set({
+    ...(body.label != null ? { label: body.label.trim() } : {}),
+    ...(body.slug != null ? { slug: body.slug.trim() } : {}),
+    ...(body.position != null ? { position: body.position } : {}),
+  }).where(eq(menusTable.id, id)).returning();
+  if (!row.length) { res.status(404).json({ message: "Menü bulunamadı." }); return; }
+  res.json(row[0]);
+});
+
+router.delete("/admin/menus/:id", async (req, res): Promise<void> => {
+  await db.delete(menusTable).where(eq(menusTable.id, Number(req.params.id)));
+  res.status(204).end();
+});
+
+router.put("/admin/menus/:id/items", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const body = req.body as MenuItemsBody;
+  const menu = (await db.select().from(menusTable).where(eq(menusTable.id, id)))[0];
+  if (!menu) { res.status(404).json({ message: "Menü bulunamadı." }); return; }
+  const items = body.items ?? [];
+  await db.delete(menuItemsTable).where(eq(menuItemsTable.menuId, id));
+  let position = 1;
+  for (const item of items) {
+    const parent = await db.insert(menuItemsTable).values({ menuId: id, label: item.label.trim(), href: item.href.trim(), position: item.position ?? position, openInNewTab: item.openInNewTab ?? false }).returning();
+    position += 1;
+    for (const child of item.children ?? []) {
+      await db.insert(menuItemsTable).values({ menuId: id, parentId: parent[0].id, label: child.label.trim(), href: child.href.trim(), position: child.position ?? position, openInNewTab: child.openInNewTab ?? false });
+      position += 1;
+    }
+  }
+  res.json({ ok: true, count: items.reduce((n, i) => n + 1 + (i.children?.length ?? 0), 0) });
 });

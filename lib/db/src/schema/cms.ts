@@ -1,6 +1,7 @@
 import { createInsertSchema } from "drizzle-zod";
 import {
   boolean,
+  foreignKey,
   integer,
   pgTable,
   serial,
@@ -64,6 +65,55 @@ export const redirectRulesTable = pgTable("redirect_rules", {
     .$onUpdate(() => new Date()),
 });
 
+export const menusTable = pgTable("menus", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  label: text("label").notNull(),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const menuItemsTable = pgTable(
+  "menu_items",
+  {
+    id: serial("id").primaryKey(),
+    menuId: integer("menu_id")
+      .notNull()
+      .references(() => menusTable.id, { onDelete: "cascade" }),
+    parentId: integer("parent_id"),
+    label: text("label").notNull(),
+    href: text("href").notNull(),
+    position: integer("position").notNull().default(0),
+    openInNewTab: boolean("open_in_new_tab").notNull().default(false),
+    enabled: boolean("enabled").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [foreignKey({ columns: [t.parentId], foreignColumns: [t.id] })],
+);
+
+export const insertMenuSchema = createInsertSchema(menusTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertMenuItemSchema = createInsertSchema(menuItemsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertMediaAssetSchema = createInsertSchema(mediaAssetsTable).omit({
   id: true,
   createdAt: true,
@@ -83,6 +133,10 @@ export const insertRedirectRuleSchema = createInsertSchema(redirectRulesTable).o
 export type MediaAsset = typeof mediaAssetsTable.$inferSelect;
 export type Page = typeof pagesTable.$inferSelect;
 export type RedirectRule = typeof redirectRulesTable.$inferSelect;
+export type Menu = typeof menusTable.$inferSelect;
+export type MenuItem = typeof menuItemsTable.$inferSelect;
 export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
 export type InsertPage = z.infer<typeof insertPageSchema>;
 export type InsertRedirectRule = z.infer<typeof insertRedirectRuleSchema>;
+export type InsertMenu = z.infer<typeof insertMenuSchema>;
+export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;

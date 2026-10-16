@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { CreateContactMessageBody, CreateContactMessageResponse, CreateProductRequestBody, CreateProductRequestResponse } from "@workspace/api-zod";
 import { db, contactMessagesTable, productRequestsTable } from "@workspace/db";
 import { rateLimit } from "../middlewares/rateLimit";
+import { sendFormNotification } from "../lib/mailer";
 
 const router: IRouter = Router();
 
@@ -23,6 +24,12 @@ router.post("/contact-messages", writeLimit, async (req, res): Promise<void> => 
     .values(parsed.data)
     .returning({ id: contactMessagesTable.id });
 
+  void sendFormNotification({
+    subject: `Yeni iletişim mesajı #${message.id} — ${parsed.data.fullName}`,
+    text: `Ad Soyad: ${parsed.data.fullName}\nE-posta: ${parsed.data.email}\nTelefon: ${parsed.data.phone ?? "-"}\nKonu: ${parsed.data.subject}\n\n${parsed.data.message}`,
+    replyTo: parsed.data.email,
+  }).catch(() => undefined);
+
   res.status(201).json(
     CreateContactMessageResponse.parse({
       id: String(message.id),
@@ -42,6 +49,12 @@ router.post("/product-requests", writeLimit, async (req, res): Promise<void> => 
     .insert(productRequestsTable)
     .values(parsed.data)
     .returning({ id: productRequestsTable.id });
+
+  void sendFormNotification({
+    subject: `Yeni ürün talebi #${request.id} — ${parsed.data.fullName}`,
+    text: `Ad Soyad: ${parsed.data.fullName}\nE-posta: ${parsed.data.email}\nTelefon: ${parsed.data.phone ?? "-"}\nÜrün: ${parsed.data.productCode} (${parsed.data.productSlug})\n\n${parsed.data.message}`,
+    replyTo: parsed.data.email,
+  }).catch(() => undefined);
 
   res.status(201).json(
     CreateProductRequestResponse.parse({
