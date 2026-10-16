@@ -12,9 +12,11 @@ declare global {
   }
 }
 
-const GA4_ID = (import.meta.env.VITE_GA4_ID as string | undefined) ?? '';
-const GTM_ID = (import.meta.env.VITE_GTM_ID as string | undefined) ?? '';
-const PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | undefined) ?? '';
+export type AnalyticsIds = { ga4?: string; gtm?: string; pixel?: string };
+
+let GA4_ID = (import.meta.env.VITE_GA4_ID as string | undefined) ?? '';
+let GTM_ID = (import.meta.env.VITE_GTM_ID as string | undefined) ?? '';
+let PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | undefined) ?? '';
 
 let booted = false;
 let pageViewFired = false;
@@ -38,9 +40,14 @@ function loadScript(src: string, id: string, extra?: { nonce?: string }) {
   document.head.appendChild(script);
 }
 
-export function initAnalytics(): void {
+export function initAnalytics(ids?: AnalyticsIds): void {
   if (booted) return;
   booted = true;
+  if (ids) {
+    if (ids.ga4) GA4_ID = ids.ga4;
+    if (ids.gtm) GTM_ID = ids.gtm;
+    if (ids.pixel) PIXEL_ID = ids.pixel;
+  }
 
   window.dataLayer = window.dataLayer ?? [];
   pushDataLayer({

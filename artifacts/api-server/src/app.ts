@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { authMiddleware } from "./middlewares/authMiddleware";
+import { auditLog } from "./middlewares/auditLog";
 import { securityHeaders } from "./middlewares/securityHeaders";
 import { rateLimit } from "./middlewares/rateLimit";
 
@@ -68,6 +69,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "256kb" }));
 app.use(express.urlencoded({ extended: true, limit: "256kb" }));
 app.use(authMiddleware);
+app.use(auditLog);
 
 app.use("/api", router);
 

@@ -580,6 +580,78 @@ export interface AdminSiteSection {
   updatedAt?: string;
 }
 
+export interface AdminSetting {
+  id: string;
+  key: string;
+  group: string;
+  label: string;
+  value: string;
+  updatedAt?: string;
+}
+
+/**
+ * New status for the message
+ */
+export type ContactMessageUpdateStatus = typeof ContactMessageUpdateStatus[keyof typeof ContactMessageUpdateStatus];
+
+
+export const ContactMessageUpdateStatus = {
+  new: 'new',
+  read: 'read',
+  answered: 'answered',
+} as const;
+
+export interface ContactMessageUpdate {
+  /** New status for the message */
+  status: ContactMessageUpdateStatus;
+}
+
+/**
+ * Map of setting key to new value
+ */
+export interface SiteSettingsUpdate {[key: string]: string}
+
+export type AdminContactMessageStatus = typeof AdminContactMessageStatus[keyof typeof AdminContactMessageStatus];
+
+
+export const AdminContactMessageStatus = {
+  new: 'new',
+  read: 'read',
+  answered: 'answered',
+} as const;
+
+export interface AdminContactMessage {
+  id: string;
+  fullName: string;
+  company?: string;
+  phone?: string;
+  email: string;
+  subject: string;
+  message: string;
+  kvkkAccepted?: boolean;
+  status: AdminContactMessageStatus;
+  createdAt: string;
+}
+
+export type AdminSummaryMonthlyMessageTrendItem = {
+  month: string;
+  count: number;
+};
+
+export interface AdminSummary {
+  productCount: number;
+  brandCount: number;
+  categoryCount: number;
+  sectorCount: number;
+  postCount: number;
+  sliderCount: number;
+  newMessageCount: number;
+  totalMessageCount: number;
+  totalRequestCount: number;
+  recentMessages: AdminContactMessage[];
+  monthlyMessageTrend: AdminSummaryMonthlyMessageTrendItem[];
+}
+
 export interface SiteSectionInput {
   /**
      * @minLength 2

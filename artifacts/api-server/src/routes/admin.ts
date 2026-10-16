@@ -1,12 +1,16 @@
 import { Router, type IRouter, type Response } from "express";
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, sql } from "drizzle-orm";
 import {
   db,
+  auditLogsTable,
   brandsTable,
   categoriesTable,
+  contactMessagesTable,
   postsTable,
+  productRequestsTable,
   productsTable,
   sectorsTable,
+  settingsTable,
   slidersTable,
   siteSectionsTable,
 } from "@workspace/db";
@@ -25,17 +29,23 @@ import {
   DeleteSectorParams,
   DeleteSiteSectionParams,
   DeleteSliderParams,
+  GetAdminSettingsResponse,
+  GetAdminSummaryResponse,
   ListAdminBrandsResponse,
   ListAdminCategoriesResponse,
+  ListAdminContactMessagesResponse,
   ListAdminPostsResponse,
   ListAdminProductsResponse,
   ListAdminSectorsResponse,
   ListAdminSiteSectionsResponse,
   ListAdminSlidersResponse,
+  UpdateAdminSettingsBody,
   UpdateBrandBody,
   UpdateBrandParams,
   UpdateCategoryBody,
   UpdateCategoryParams,
+  UpdateContactMessageBody,
+  UpdateContactMessageParams,
   UpdatePostBody,
   UpdatePostParams,
   UpdateProductBody,
@@ -577,6 +587,220 @@ router.delete("/admin/posts/:id", async (req, res): Promise<void> => {
     return;
   }
   res.status(204).end();
+});
+
+function contactMessageDto(m: typeof contactMessagesTable.$inferSelect) {
+  return {
+    id: String(m.id),
+    fullName: m.fullName,
+    company: m.company,
+    phone: m.phone,
+    email: m.email,
+    subject: m.subject,
+    message: m.message,
+    kvkkAccepted: m.kvkkAccepted,
+    status: m.status,
+    createdAt: m.createdAt.toISOString(),
+  };
+}
+
+router.get("/admin/summary", async (_req, res): Promise<void> => {
+  const [
+    productCountRows,
+    brandCountRows,
+    categoryCountRows,
+    postCountRows,
+    sliderCountRows,
+    sectorList,
+    messageCountRows,
+    newMessageCountRows,
+    requestCountRows,
+    recentMessages,
+    monthlyRows,
+  ] = await Promise.all([
+    db.select({ value: count(productsTable.id) }).from(productsTable),
+    db.select({ value: count(brandsTable.id) }).from(brandsTable),
+    db.select({ value: count(categoriesTable.id) }).from(categoriesTable),
+    db.select({ value: count(postsTable.id) }).from(postsTable),
+    db.select({ value: count(slidersTable.id) }).from(slidersTable),
+    db.select({ id: sectorsTable.id }).from(sectorsTable),
+    db.select({ value: count(contactMessagesTable.id) }).from(contactMessagesTable),
+    db
+      .select({ value: count(contactMessagesTable.id) })
+      .from(contactMessagesTable)
+      .where(eq(contactMessagesTable.status, "new")),
+    db.select({ value: count(productRequestsTable.id) }).from(productRequestsTable),
+    db
+      .select()
+      .from(contactMessagesTable)
+      .orderBy(desc(contactMessagesTable.createdAt))
+      .limit(6),
+    db
+      .select({
+        month: sql<string>`to_char(${contactMessagesTable.createdAt}, 'YYYY-MM')`,
+        count: count(contactMessagesTable.id),
+      })
+      .from(contactMessagesTable)
+      .where(
+        gte(
+          contactMessagesTable.createdAt,
+          sql`date_trunc('month', now()) - interval '5 months'`,
+        ),
+      )
+      .groupBy(sql`to_char(${contactMessagesTable.createdAt}, 'YYYY-MM')`)
+      .orderBy(asc(sql`to_char(${contactMessagesTable.createdAt}, 'YYYY-MM')`)),
+  ]);
+
+  res.json(
+    GetAdminSummaryResponse.parse({
+      productCount: Number(productCountRows[0]?.value ?? 0),
+      brandCount: Number(brandCountRows[0]?.value ?? 0),
+      categoryCount: Number(categoryCountRows[0]?.value ?? 0),
+      sectorCount: sectorList.length,
+      postCount: Number(postCountRows[0]?.value ?? 0),
+      sliderCount: Number(sliderCountRows[0]?.value ?? 0),
+      newMessageCount: Number(newMessageCountRows[0]?.value ?? 0),
+      totalMessageCount: Number(messageCountRows[0]?.value ?? 0),
+      totalRequestCount: Number(requestCountRows[0]?.value ?? 0),
+      recentMessages: recentMessages.map(contactMessageDto),
+      monthlyMessageTrend: monthlyRows.map((r) => ({
+        month: String(r.month),
+        count: Number(r.count),
+      })),
+    }),
+  );
+});
+
+router.get("/admin/contact-messages", async (_req, res): Promise<void> => {
+  const messages = await db
+    .select()
+    .from(contactMessagesTable)
+    .orderBy(desc(contactMessagesTable.createdAt))
+    .limit(200);
+  res.json(ListAdminContactMessagesResponse.parse(messages.map(contactMessageDto)));
+});
+
+router.patch("/admin/contact-messages/:id", async (req, res): Promise<void> => {
+  const params = UpdateContactMessageParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const body = UpdateContactMessageBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Geçersiz durum." });
+    return;
+  }
+  const [row] = await db
+    .update(contactMessagesTable)
+    .set({ status: body.data.status })
+    .where(eq(contactMessagesTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Mesaj bulunamadı" });
+    return;
+  }
+  res.json(contactMessageDto(row));
+});
+
+const SETTING_GROUPS: Record<string, string> = {
+  general: "Genel Ayarlar",
+  smtp: "SMTP Ayarları",
+  seo: "SEO & Google Search Console",
+};
+
+router.get("/admin/settings", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(settingsTable)
+    .orderBy(asc(settingsTable.group), asc(settingsTable.key));
+  res.json(
+    GetAdminSettingsResponse.parse(
+      rows.map((s) => ({
+        id: String(s.id),
+        key: s.key,
+        group: SETTING_GROUPS[s.group] ?? s.group,
+        label: s.label,
+        value: s.value,
+        updatedAt: s.updatedAt.toISOString(),
+      })),
+    ),
+  );
+});
+
+router.put("/admin/settings", async (req, res): Promise<void> => {
+  const body = UpdateAdminSettingsBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Geçersiz ayar girdisi." });
+    return;
+  }
+  await Promise.all(
+    Object.entries(body.data).map(([key, value]) =>
+      db
+        .update(settingsTable)
+        .set({ value })
+        .where(eq(settingsTable.key, key)),
+    ),
+  );
+  const rows = await db
+    .select()
+    .from(settingsTable)
+    .orderBy(asc(settingsTable.group), asc(settingsTable.key));
+  res.json(
+    GetAdminSettingsResponse.parse(
+      rows.map((s) => ({
+        id: String(s.id),
+        key: s.key,
+        group: SETTING_GROUPS[s.group] ?? s.group,
+        label: s.label,
+        value: s.value,
+        updatedAt: s.updatedAt.toISOString(),
+      })),
+    ),
+  );
+});
+
+router.get("/admin/audit-logs", async (req, res): Promise<void> => {
+  const limit = Math.min(Number(req.query.limit) || 100, 500);
+  const rows = await db
+    .select()
+    .from(auditLogsTable)
+    .orderBy(desc(auditLogsTable.createdAt))
+    .limit(limit);
+  res.json(
+    rows.map((r) => ({
+      id: String(r.id),
+      actorEmail: r.actorEmail,
+      module: r.module,
+      action: r.action,
+      entityId: r.entityId,
+      statusCode: r.statusCode,
+      meta: r.meta ? JSON.parse(r.meta) : {},
+      createdAt: r.createdAt.toISOString(),
+    })),
+  );
+});
+
+router.post("/admin/backup", async (_req, res): Promise<void> => {
+  const { execFile } = await import("node:child_process");
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const { promisify } = await import("node:util");
+  const execFileAsync = promisify(execFile);
+  const backupDir = path.join(process.cwd(), "backups");
+  fs.mkdirSync(backupDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const fileName = `rms-rulmak-${stamp}.sql`;
+  const filePath = path.join(backupDir, fileName);
+  const connection = process.env.DATABASE_URL ?? "postgresql://rulmak:rulmak_dev@localhost:15433/rms_rulmak";
+  try {
+    await execFileAsync("pg_dump", [connection, "-f", filePath], { timeout: 300_000 });
+    const stats = fs.statSync(filePath);
+    res.json({ ok: true, fileName, sizeBytes: stats.size, path: `backups/${fileName}` });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ ok: false, error: message });
+  }
 });
 
 export default router;

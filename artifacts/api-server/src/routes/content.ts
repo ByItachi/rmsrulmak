@@ -4,6 +4,7 @@ import {
   db,
   postsTable,
   sectorsTable,
+  settingsTable,
   siteSectionsTable,
   slidersTable,
 } from "@workspace/db";
@@ -121,6 +122,27 @@ router.get("/posts/:slug", async (req, res): Promise<void> => {
       createdAt: row.createdAt,
     }),
   );
+});
+
+const PUBLIC_SETTING_KEYS = [
+  "site_name",
+  "site_tagline",
+  "meta_title",
+  "meta_description",
+  "gsc_verification",
+  "ga4_id",
+  "gtm_id",
+  "meta_pixel_id",
+] as const;
+
+router.get("/settings/public", async (_req, res): Promise<void> => {
+  const rows = await db.select().from(settingsTable);
+  const out: Record<string, string> = {};
+  for (const key of PUBLIC_SETTING_KEYS) {
+    const row = rows.find((r) => r.key === key);
+    if (row) out[key] = row.value;
+  }
+  res.json(out);
 });
 
 export default router;

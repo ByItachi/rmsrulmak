@@ -42,7 +42,7 @@ function CatalogLayout({ children }: { children: ReactNode }) {
 
 function CatalogCard({ item, href }: { item: CatalogItem; href: string }) {
   return <Link href={href} data-testid={`card-e-katalog-${item.slug}`} className="lift group overflow-hidden rounded-xl border border-border bg-card">
-    <div className="flex h-64 items-center justify-center bg-white p-4 sm:h-72"><img src={item.image} alt={item.title} loading="lazy" className="max-h-full max-w-full object-contain" /></div>
+    <div className="flex h-64 items-center justify-center bg-white p-4 sm:h-72"><img src={item.image} alt={item.title} width={600} height={800} loading="lazy" className="max-h-full max-w-full object-contain" /></div>
     <div className="border-t border-border p-4"><p className="text-sm font-bold leading-5 group-hover:text-primary">{item.title}</p><p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">İncele <ArrowRight size={13} /></p></div>
   </Link>;
 }
@@ -127,7 +127,7 @@ export function EKatalogSection() {
         <Link href="/kataloglar" data-testid="link-back-e-katalog" className="text-sm font-semibold text-muted-foreground hover:text-primary">← Kataloglar</Link>
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-3">
           {technicalCatalogBrands.map((g) => <Link key={g.slug} href={`/kataloglar/teknik/${g.slug}`} data-testid={`card-e-katalog-brand-${g.slug}`} className="lift group flex flex-col items-center rounded-xl bg-white p-6 text-center transition hover:shadow-md">
-            <div className="flex h-28 w-full items-center justify-center"><img src={`/brand/reference/${g.slug}-logo.jpg`} alt={g.name} loading="lazy" className="h-full w-full max-w-[180px] object-contain" style={{ mixBlendMode: 'multiply' }} /></div>
+            <div className="flex h-28 w-full items-center justify-center"><img src={`/brand/reference/${g.slug}-logo.jpg`} alt={g.name} width={1000} height={300} loading="lazy" className="h-full w-full max-w-[180px] object-contain" style={{ mixBlendMode: 'multiply' }} /></div>
             <p className="mt-4 text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors group-hover:text-primary">{g.name}</p>
             <p className="mt-1 text-xs text-muted-foreground">{g.items.length} katalog</p>
           </Link>)}

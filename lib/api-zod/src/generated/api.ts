@@ -1274,3 +1274,111 @@ export const DeleteSiteSectionParams = zod.object({
 export const DeleteSiteSectionResponse = zod.void()
 
 
+/**
+ * @summary Extended dashboard statistics for the admin panel
+ */
+export const GetAdminSummaryResponse = zod.object({
+  "productCount": zod.number().int(),
+  "brandCount": zod.number().int(),
+  "categoryCount": zod.number().int(),
+  "sectorCount": zod.number().int(),
+  "postCount": zod.number().int(),
+  "sliderCount": zod.number().int(),
+  "newMessageCount": zod.number().int(),
+  "totalMessageCount": zod.number().int(),
+  "totalRequestCount": zod.number().int(),
+  "recentMessages": zod.array(zod.object({
+  "id": zod.string(),
+  "fullName": zod.string(),
+  "company": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string(),
+  "subject": zod.string(),
+  "message": zod.string(),
+  "kvkkAccepted": zod.boolean().optional(),
+  "status": zod.enum(['new', 'read', 'answered']),
+  "createdAt": zod.coerce.date()
+})),
+  "monthlyMessageTrend": zod.array(zod.object({
+  "month": zod.string(),
+  "count": zod.number().int()
+}))
+})
+
+
+/**
+ * @summary List contact messages for the admin panel
+ */
+export const ListAdminContactMessagesResponseItem = zod.object({
+  "id": zod.string(),
+  "fullName": zod.string(),
+  "company": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string(),
+  "subject": zod.string(),
+  "message": zod.string(),
+  "kvkkAccepted": zod.boolean().optional(),
+  "status": zod.enum(['new', 'read', 'answered']),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminContactMessagesResponse = zod.array(ListAdminContactMessagesResponseItem)
+
+
+/**
+ * @summary Update a contact message status
+ */
+
+
+
+export const UpdateContactMessageParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const UpdateContactMessageBody = zod.object({
+  "status": zod.enum(['new', 'read', 'answered']).describe('New status for the message')
+})
+
+export const UpdateContactMessageResponse = zod.object({
+  "id": zod.string(),
+  "fullName": zod.string(),
+  "company": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string(),
+  "subject": zod.string(),
+  "message": zod.string(),
+  "kvkkAccepted": zod.boolean().optional(),
+  "status": zod.enum(['new', 'read', 'answered']),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List site settings grouped by section
+ */
+export const GetAdminSettingsResponseItem = zod.object({
+  "id": zod.string(),
+  "key": zod.string(),
+  "group": zod.string(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const GetAdminSettingsResponse = zod.array(GetAdminSettingsResponseItem)
+
+
+/**
+ * @summary Bulk update site settings (key-value pairs)
+ */
+export const UpdateAdminSettingsBody = zod.record(zod.string(), zod.string()).describe('Map of setting key to new value')
+
+export const UpdateAdminSettingsResponseItem = zod.object({
+  "id": zod.string(),
+  "key": zod.string(),
+  "group": zod.string(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const UpdateAdminSettingsResponse = zod.array(UpdateAdminSettingsResponseItem)
+
+

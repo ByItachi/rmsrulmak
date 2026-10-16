@@ -2,16 +2,26 @@ import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import {
   ArrowLeft,
+  BarChart3,
   Check,
+  CheckCheck,
+  Cog,
   Factory,
   FileText,
+  Gauge,
   Image as ImageIcon,
+  Inbox,
   Layers3,
   Loader2,
+  Mail,
   PackageSearch,
   Pencil,
   Plus,
   Save,
+  Search,
+  Send,
+  Settings2,
+  ShieldCheck,
   Trash2,
 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -30,21 +40,27 @@ import {
   useDeleteSector,
   useDeleteSiteSection,
   useDeleteSlider,
+  useGetAdminSettings,
+  useGetAdminSummary,
   useListAdminBrands,
   useListAdminCategories,
+  useListAdminContactMessages,
   useListAdminPosts,
   useListAdminProducts,
   useListAdminSectors,
   useListAdminSiteSections,
   useListAdminSliders,
+  useUpdateAdminSettings,
   useUpdateBrand,
   useUpdateCategory,
+  useUpdateContactMessage,
   useUpdatePost,
   useUpdateProduct,
   useUpdateSector,
   useUpdateSiteSection,
   useUpdateSlider,
 } from "@workspace/api-client-react";
+import type { AdminSetting } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -339,32 +355,216 @@ export function AdminContent() {
   if (location.startsWith("/admin/sectors")) return <SimpleItemsAdmin kind="sector" />;
   if (location.startsWith("/admin/sections")) return <SectionsAdmin />;
   if (location.startsWith("/admin/products")) return <ProductsAdmin />;
+  if (location.startsWith("/admin/inquiries")) return <InquiriesAdmin />;
+  if (location.startsWith("/admin/settings")) return <SettingsAdmin />;
+  if (location.startsWith("/admin/audit")) return <AuditLogsAdmin />;
   return <AdminOverview />;
+}
+
+function KpiCard({ icon: Icon, label, value, sub, tone }: { icon: typeof Gauge; label: string; value: string | number; sub?: string; tone?: "default" | "accent" }) {
+  return <div className={`rounded-xl border p-5 ${tone === "accent" ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
+    <div className="flex justify-between"><span className="text-sm text-muted-foreground">{label}</span><Icon size={18} className={tone === "accent" ? "text-primary" : "text-primary"} /></div>
+    <p data-testid={`kpi-${label}`} className="mt-5 font-display text-3xl font-semibold">{value}</p>
+    {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+  </div>;
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = { new: "bg-blue-100 text-blue-700", read: "bg-amber-100 text-amber-700", answered: "bg-green-100 text-green-700" };
+  const label: Record<string, string> = { new: "Yeni", read: "Okundu", answered: "Yanıtlandı" };
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${map[status] ?? "bg-muted text-muted-foreground"}`}>{label[status] ?? status}</span>;
 }
 
 function AdminOverview() {
   const [location, setLocation] = useLocation();
-  const listBrands = useListAdminBrands();
-  const listSliders = useListAdminSliders();
-  const listPosts = useListAdminPosts();
-  const listSections = useListAdminSiteSections();
-  const cards = [
-    ["Sliderlar", listSliders.data?.length ?? "—", ImageIcon, "/admin/sliders"],
-    ["Blog yazıları", listPosts.data?.length ?? "—", FileText, "/admin/posts"],
-    ["Markalar", listBrands.data?.length ?? "—", Layers3, "/admin/brands"],
-    ["Site bölümleri", listSections.data?.length ?? "—", Factory, "/admin/sections"],
-  ];
+  const summary = useGetAdminSummary();
+  const d = summary.data;
+  const recent = d?.recentMessages ?? [];
+  const trend = d?.monthlyMessageTrend ?? [];
+  const maxTrend = Math.max(1, ...trend.map((t) => t.count));
+  const monthLabel = (m: string) => {
+    const [y, mo] = m.split("-");
+    const names = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+    return `${names[Number(mo) - 1] ?? mo} ${y.slice(2)}`;
+  };
   return <div className="space-y-6">
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(([label, value, Icon, href]) => <button key={String(href)} type="button" onClick={() => setLocation(String(href))} className="group rounded-xl border border-border bg-card p-5 text-left transition hover:border-primary/40">
-        <div className="flex justify-between"><span className="text-sm text-muted-foreground">{String(label)}</span>{typeof Icon === "function" && <Icon size={18} className="text-primary" />}</div>
-        <p className="mt-5 font-display text-3xl font-semibold">{String(value)}</p>
-        <p className="mt-2 text-xs font-semibold text-primary opacity-0 transition group-hover:opacity-100">Yönet →</p>
-      </button>)}
+      <KpiCard icon={PackageSearch} label="Ürünler" value={d?.productCount ?? "—"} sub="Katalogdaki toplam ürün" />
+      <KpiCard icon={Layers3} label="Markalar" value={d?.brandCount ?? "—"} sub="Distribütörlüğü yapılan marka" />
+      <KpiCard icon={Factory} label="Sektörler" value={d?.sectorCount ?? "—"} sub="Endüstriyel çözüm alanı" />
+      <KpiCard icon={FileText} label="Blog yazıları" value={d?.postCount ?? "—"} sub="Yayınlanan içerik" />
+      <KpiCard icon={ImageIcon} label="Hero sliderlar" value={d?.sliderCount ?? "—"} sub="Ana sayfa görselleri" />
+      <KpiCard icon={Mail} label="Yeni mesajlar" value={d?.newMessageCount ?? "—"} tone="accent" sub={`Toplam ${d?.totalMessageCount ?? 0} iletişim`} />
+      <KpiCard icon={Inbox} label="Ürün talepleri" value={d?.totalRequestCount ?? "—"} sub="B2B ürün istekleri" />
+      <KpiCard icon={Cog} label="Kategoriler" value={d?.categoryCount ?? "—"} sub="Ürün grupları" />
     </div>
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h2 className="font-display text-2xl font-semibold">İçerik yönetimi</h2>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">Sliderlar, blog yazıları, markalar, kategoriler, sektörler, ürünler ve site bölümleri — tüm içerik bu panelden yönetilir ve veritabanına kaydedilir. Değişiklikler anında sitede görünür.</p>
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center justify-between"><div><p className="eyebrow">Eğilim</p><h2 className="mt-2 font-display text-2xl font-semibold">Son 6 ay — iletişim mesajları</h2></div><BarChart3 className="text-muted-foreground" /></div>
+        {trend.length === 0 ? <p className="mt-8 text-center text-sm text-muted-foreground">Henüz mesaj verisi yok.</p> : <div className="mt-8 flex h-48 items-end gap-3">
+          {trend.map((t) => <div key={t.month} className="flex flex-1 flex-col items-center gap-2"><div className="flex w-full flex-1 items-end"><div className="w-full rounded-t-md bg-primary/80 transition-all hover:bg-primary" style={{ height: `${Math.max(6, (t.count / maxTrend) * 100)}%` }} title={`${t.count} mesaj`} /></div><span className="text-[11px] font-bold text-muted-foreground">{monthLabel(t.month)}</span><span className="text-xs font-bold">{t.count}</span></div>)}
+        </div>}
+      </div>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center justify-between"><div><p className="eyebrow">Gelen kutusu</p><h2 className="mt-2 font-display text-2xl font-semibold">Son mesajlar</h2></div><button type="button" onClick={() => setLocation("/admin/inquiries")} className="text-sm font-bold text-primary hover:underline">Tümü →</button></div>
+        <div className="mt-5 space-y-3">
+          {recent.map((m) => <button key={m.id} type="button" onClick={() => setLocation("/admin/inquiries")} className="flex w-full items-start justify-between gap-3 rounded-lg border border-border p-3.5 text-left transition hover:border-primary/40">
+            <div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate text-sm font-bold">{m.fullName}</p><StatusBadge status={m.status} /></div><p className="mt-1 truncate text-xs text-muted-foreground">{m.subject || "—"}</p></div>
+            <span className="shrink-0 text-[11px] text-muted-foreground">{new Date(m.createdAt).toLocaleDateString("tr-TR")}</span>
+          </button>)}
+          {recent.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">Henüz iletişim mesajı yok.</p>}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+function InquiriesAdmin() {
+  const list = useListAdminContactMessages();
+  const update = useUpdateContactMessage();
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState("all");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const messages = list.data ?? [];
+  const filtered = filter === "all" ? messages : messages.filter((m) => m.status === filter);
+  const counts = { all: messages.length, new: messages.filter((m) => m.status === "new").length, read: messages.filter((m) => m.status === "read").length, answered: messages.filter((m) => m.status === "answered").length };
+  const setStatus = (id: string, status: string) => {
+    update.mutate({ id: Number(id), data: { status } as never }, { onSuccess: () => qc.invalidateQueries({ queryKey: ["/admin/contact-messages"] }) });
+  };
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="font-display text-2xl font-semibold">İletişim mesajları</h2>
+      <div className="flex flex-wrap gap-2">
+        {(["all", "new", "read", "answered"] as const).map((f) => <button key={f} type="button" data-testid={`filter-${f}`} onClick={() => setFilter(f)} className={`rounded-full px-4 py-2 text-xs font-bold ${filter === f ? "bg-primary text-white" : "border border-border bg-card text-muted-foreground hover:border-primary/40"}`}>{f === "all" ? "Tümü" : f === "new" ? "Yeni" : f === "read" ? "Okundu" : "Yanıtlandı"} ({counts[f]})</button>)}
+      </div>
+    </div>
+    <div className="space-y-3">
+      {filtered.map((m) => <div key={m.id} className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold text-primary">{m.fullName.charAt(0)}</span><div><p className="font-bold">{m.fullName}{m.company ? <span className="ml-2 text-xs font-normal text-muted-foreground">· {m.company}</span> : null}</p><p className="text-xs text-muted-foreground">{m.email}{m.phone ? ` · ${m.phone}` : ""} · {new Date(m.createdAt).toLocaleString("tr-TR")}</p></div></div>
+          <div className="flex items-center gap-2"><StatusBadge status={m.status} /><button type="button" onClick={() => setOpenId(openId === m.id ? null : m.id)} className="rounded-md border border-border px-3 py-1.5 text-xs font-bold hover:bg-muted">{openId === m.id ? "Gizle" : "Oku"}</button></div>
+        </div>
+        <p className="mt-3 text-sm font-bold text-primary">{m.subject}</p>
+        {openId === m.id && <div className="mt-3 rounded-lg bg-muted/50 p-4"><p className="text-sm leading-6">{m.message}</p><div className="mt-4 flex flex-wrap gap-2">
+          {(["new", "read", "answered"] as const).map((s) => <button key={s} type="button" data-testid={`status-${s}-${m.id}`} onClick={() => setStatus(m.id, s)} className={`rounded-md px-3 py-1.5 text-xs font-bold ${m.status === s ? "bg-primary text-white" : "border border-border bg-background hover:border-primary/40"}`}>{s === "new" ? "Yeni" : s === "read" ? "Okundu" : "Yanıtlandı"}</button>)}
+          <a href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`} className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white"><Send size={13} /> Yanıtla</a>
+        </div></div>}
+      </div>)}
+      {filtered.length === 0 && <div className="rounded-xl border border-border bg-card p-10 text-center"><p className="text-sm text-muted-foreground">Bu filtrede mesaj yok.</p></div>}
+    </div>
+  </div>;
+}
+
+const SETTING_GROUPS = ["general", "smtp", "seo", "integrations"] as const;
+const GROUP_LABELS: Record<string, string> = { general: "Genel Ayarlar", smtp: "SMTP Ayarları", seo: "SEO & Google Search Console", integrations: "Google & Meta Entegrasyonları" };
+const GROUP_ICONS: Record<string, typeof Gauge> = { general: Settings2, smtp: Mail, seo: Search, integrations: Send };
+const GROUP_DESCRIPTIONS: Record<string, string> = { general: "Site kimliği ve iletişim bilgileri.", smtp: "E-posta gönderimi için SMTP sunucu ayarları.", seo: "Arama motoru doğrulama ve meta bilgileri.", integrations: "GA4, GTM, Meta Pixel ve Search Console yapılandırması. Bu değerler siteye izin koşullarıyla birlikte uygulanır." };
+
+function SettingsAdmin() {
+  const list = useGetAdminSettings();
+  const update = useUpdateAdminSettings();
+  const qc = useQueryClient();
+  const [activeGroup, setActiveGroup] = useState<(typeof SETTING_GROUPS)[number]>("general");
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (list.data) {
+      const v: Record<string, string> = {};
+      for (const s of list.data) v[s.key] = s.value ?? "";
+      setValues(v);
+    }
+  }, [list.data]);
+
+  const byGroup = (list.data ?? []).reduce<Record<string, AdminSetting[]>>((acc, s) => { (acc[s.group] ??= []).push(s); return acc; }, {});
+  const activeSettings = byGroup[GROUP_LABELS[activeGroup]] ?? [];
+  const save = async () => {
+    const payload: Record<string, string> = {};
+    for (const [k, v] of Object.entries(values)) if (v !== undefined) payload[k] = v;
+    await update.mutateAsync({ data: payload });
+    qc.invalidateQueries({ queryKey: ["/admin/settings"] });
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2500);
+  };
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="eyebrow">Yapılandırma</p><h2 className="mt-2 font-display text-2xl font-semibold">Site ayarları</h2></div>
+      <button type="button" data-testid="save-settings" onClick={save} disabled={update.isPending} className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{update.isPending ? <Loader2 size={16} className="animate-spin" /> : saved ? <Check size={16} /> : <Save size={16} />}{saved ? "Kaydedildi" : "Kaydet"}</button>
+    </div>
+    <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="h-fit space-y-1.5 rounded-xl border border-border bg-card p-4 lg:sticky lg:top-28">
+        {SETTING_GROUPS.map((g) => { const Icon = GROUP_ICONS[g]; return <button key={g} type="button" data-testid={`tab-${g}`} onClick={() => setActiveGroup(g)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold ${activeGroup === g ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted"}`}><Icon size={17} />{GROUP_LABELS[g]}</button>; })}
+      </div>
+      <div className="space-y-4">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h3 className="font-display text-lg font-semibold">{GROUP_LABELS[activeGroup]}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{GROUP_DESCRIPTIONS[activeGroup]}</p>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {activeSettings.map((s) => <Field key={s.key} label={s.label}>
+              {s.key === "smtp_pass" ? <input type="password" className={inputCls} value={values[s.key] ?? ""} onChange={(e) => setValues((p) => ({ ...p, [s.key]: e.target.value }))} /> : <input className={inputCls} value={values[s.key] ?? ""} onChange={(e) => setValues((p) => ({ ...p, [s.key]: e.target.value }))} />}
+            </Field>)}
+            {activeSettings.length === 0 && <p className="col-span-full py-8 text-center text-sm text-muted-foreground">Bu grupta ayar bulunamadı.</p>}
+          </div>
+        </div>
+        {activeGroup === "seo" && <div className="rounded-xl border border-amber-200 bg-amber-50 p-5"><p className="text-sm font-bold text-amber-800">Google Search Console nasıl çalışır?</p><p className="mt-2 text-sm leading-6 text-amber-700">Doğrulama kodunu (meta etiket) yukarıdaki alana yapıştırın. Kod, site <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs">&lt;head&gt;</code> bölümüne otomatik eklenir ve Search Console doğrulaması tamamlanır. Meta başlık/açıklama alanları SEO varsayılanı olarak kullanılır.</p></div>}
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><h3 className="font-display text-lg font-semibold">Veritabanı yedeği</h3><p className="mt-1 text-sm text-muted-foreground">Tüm içerik ve ayarların PostgreSQL dökümünü oluşturur. Yedekler <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">backups/</code> klasöründe, herkese açık web dizininin dışında saklanır.</p></div>
+            <button type="button" data-testid="backup-button" onClick={async () => {
+              try {
+                const res = await fetch('/api/admin/backup', { method: 'POST' });
+                const data = await res.json();
+                window.alert(data.ok ? `Yedek oluşturuldu: ${data.fileName} (${(data.sizeBytes / 1024 / 1024).toFixed(1)} MB)` : `Yedekleme başarısız: ${data.error}`);
+              } catch (err) {
+                window.alert('Yedekleme isteği gönderilemedi.');
+                void err;
+              }
+            }} className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white">Yedek oluştur</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+type AuditRow = { id: string; actorEmail: string; module: string; action: string; entityId: string | null; statusCode: number; meta: Record<string, unknown>; createdAt: string };
+
+function AuditLogsAdmin() {
+  const [rows, setRows] = useState<AuditRow[] | null>(null);
+  const [error, setError] = useState("");
+  const refresh = useCallback(() => {
+    fetch('/api/admin/audit-logs')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setRows(data);
+        else setError(String(data?.error ?? "Yüklenemedi"));
+      })
+      .catch(() => setError("Audit log yüklenemedi."));
+  }, []);
+  useEffect(refresh, [refresh]);
+  const statusColor = (code: number) => code < 400 ? "bg-green-100 text-green-700" : code < 500 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700";
+  const methodColor = (m: string) => m === "GET" ? "bg-blue-100 text-blue-700" : m === "POST" ? "bg-green-100 text-green-700" : m === "DELETE" ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700";
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="eyebrow">Denetim izi</p><h2 className="mt-2 font-display text-2xl font-semibold">Güvenlik & audit log</h2></div>
+      <button type="button" data-testid="refresh-audit" onClick={refresh} className="rounded-md border border-border bg-card px-4 py-2 text-sm font-bold hover:bg-muted">Yenile</button>
+    </div>
+    {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>}
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      <table className="w-full min-w-[720px] text-left text-sm">
+        <thead><tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Tarih</th><th className="px-4 py-3">Kullanıcılar</th><th className="px-4 py-3">Yöntem</th><th className="px-4 py-3">Modül</th><th className="px-4 py-3">Durum</th><th className="px-4 py-3">IP</th></tr></thead>
+        <tbody>
+          {rows?.map((r) => <tr key={r.id} className="border-b border-border/60 last:border-0">
+            <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{new Date(r.createdAt).toLocaleString("tr-TR")}</td>
+            <td className="px-4 py-3 font-semibold">{r.actorEmail}</td>
+            <td className="px-4 py-3"><span className={`rounded px-2 py-0.5 text-[11px] font-bold ${methodColor(r.action)}`}>{r.action}</span></td>
+            <td className="px-4 py-3 font-mono text-xs">{r.module}{r.entityId ? ` / ${r.entityId}` : ""}</td>
+            <td className="px-4 py-3"><span className={`rounded px-2 py-0.5 text-[11px] font-bold ${statusColor(r.statusCode)}`}>{r.statusCode}</span></td>
+            <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{String(r.meta?.ip ?? "—")}</td>
+          </tr>)}
+          {rows && rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">Henüz kayıt yok. Sisteme giriş yapan yöneticilerin işlemleri burada görünür.</td></tr>}
+        </tbody>
+      </table>
     </div>
   </div>;
 }

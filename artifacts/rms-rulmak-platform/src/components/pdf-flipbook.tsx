@@ -133,8 +133,8 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
             <button type="button" onClick={fullscreen} aria-label="Tam ekran" data-testid="flip-fullscreen" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Maximize size={16} /></button>
             <a href={src} download target="_blank" rel="noopener noreferrer" aria-label="PDF indir" data-testid="flip-download" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Download size={17} /></a>
           </div>
-          <div className="w-full overflow-auto" style={{ height: Math.round((size.h * 2) * zoom) + 4 }}>
-            <div style={{ width: size.w * 2 * zoom, height: size.h * 2 * zoom, transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+          <div className="w-full overflow-auto" style={{ height: Math.round(size.h * zoom) + 44 }}>
+            <div style={{ width: size.w * 2 * zoom, height: size.h * zoom, transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
               <HTMLFlipBook
                 key={String(size.w) + '-' + String(size.h) + '-' + String(zoom)}
                 ref={bookRef}
@@ -142,9 +142,9 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
                 height={size.h}
                 size="fixed"
                 minWidth={320}
-                maxWidth={1400}
+                maxWidth={1600}
                 minHeight={280}
-                maxHeight={1400}
+                maxHeight={1600}
                 showCover={false}
                 mobileScrollSupport
                 drawShadow

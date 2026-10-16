@@ -1113,6 +1113,107 @@ paths:
           description: Manager access required
         "404":
           description: Site section not found
+  /admin/summary:
+    get:
+      operationId: getAdminSummary
+      tags: [content-admin]
+      summary: Extended dashboard statistics for the admin panel
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSummary"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/contact-messages:
+    get:
+      operationId: listAdminContactMessages
+      tags: [content-admin]
+      summary: List contact messages for the admin panel
+      responses:
+        "200":
+          description: Contact message list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminContactMessage"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/contact-messages/{id}:
+    patch:
+      operationId: updateContactMessage
+      tags: [content-admin]
+      summary: Update a contact message status
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactMessageUpdate"
+      responses:
+        "200":
+          description: Updated contact message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminContactMessage"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Contact message not found
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [content-admin]
+      summary: List site settings grouped by section
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSetting"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    put:
+      operationId: updateAdminSettings
+      tags: [content-admin]
+      summary: Bulk update site settings (key-value pairs)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated site settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSetting"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -2153,6 +2254,124 @@ components:
         - page
         - label
         - body
+    AdminSetting:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        group:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - key
+        - group
+        - label
+        - value
+    ContactMessageUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [new, read, answered]
+          description: New status for the message
+      required:
+        - status
+    SiteSettingsUpdate:
+      type: object
+      additionalProperties:
+        type: string
+      description: Map of setting key to new value
+    AdminContactMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        company:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        kvkkAccepted:
+          type: boolean
+        status:
+          type: string
+          enum: [new, read, answered]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - fullName
+        - email
+        - subject
+        - message
+        - status
+        - createdAt
+    AdminSummary:
+      type: object
+      properties:
+        productCount:
+          type: integer
+        brandCount:
+          type: integer
+        categoryCount:
+          type: integer
+        sectorCount:
+          type: integer
+        postCount:
+          type: integer
+        sliderCount:
+          type: integer
+        newMessageCount:
+          type: integer
+        totalMessageCount:
+          type: integer
+        totalRequestCount:
+          type: integer
+        recentMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminContactMessage"
+        monthlyMessageTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              count:
+                type: integer
+            required:
+              - month
+              - count
+      required:
+        - productCount
+        - brandCount
+        - categoryCount
+        - sectorCount
+        - postCount
+        - sliderCount
+        - newMessageCount
+        - totalMessageCount
+        - totalRequestCount
+        - recentMessages
+        - monthlyMessageTrend
     SiteSectionInput:
       type: object
       properties:

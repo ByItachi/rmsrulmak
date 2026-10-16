@@ -72,6 +72,31 @@ export const siteSectionsTable = pgTable("site_sections", {
     .$onUpdate(() => new Date()),
 });
 
+export const settingsTable = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  group: text("group").notNull().default("general"),
+  label: text("label").notNull(),
+  value: text("value").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const auditLogsTable = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  actorEmail: text("actor_email").notNull(),
+  module: text("module").notNull(),
+  action: text("action").notNull(),
+  entityId: text("entity_id"),
+  statusCode: integer("status_code").notNull(),
+  meta: text("meta"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const insertSectorSchema = createInsertSchema(sectorsTable).omit({
   id: true,
   createdAt: true,
@@ -95,11 +120,19 @@ export const insertSiteSectionSchema = createInsertSchema(siteSectionsTable).omi
   updatedAt: true,
 });
 
+export const insertSettingSchema = createInsertSchema(settingsTable).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type Sector = typeof sectorsTable.$inferSelect;
 export type Post = typeof postsTable.$inferSelect;
 export type Slider = typeof slidersTable.$inferSelect;
 export type SiteSection = typeof siteSectionsTable.$inferSelect;
+export type SiteSetting = typeof settingsTable.$inferSelect;
+export type AuditLog = typeof auditLogsTable.$inferSelect;
 export type InsertSector = z.infer<typeof insertSectorSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type InsertSlider = z.infer<typeof insertSliderSchema>;
 export type InsertSiteSection = z.infer<typeof insertSiteSectionSchema>;
+export type InsertSetting = z.infer<typeof insertSettingSchema>;
