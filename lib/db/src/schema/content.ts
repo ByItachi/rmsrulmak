@@ -1,0 +1,60 @@
+import { createInsertSchema } from "drizzle-zod";
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { z } from "zod/v4";
+
+export const sectorsTable = pgTable("sectors", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const postsTable = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  tag: text("tag").notNull().default("Teknik bilgi"),
+  excerpt: text("excerpt").notNull().default(""),
+  body: text("body").notNull().default(""),
+  readTime: integer("read_time").notNull().default(4),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const insertSectorSchema = createInsertSchema(sectorsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPostSchema = createInsertSchema(postsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Sector = typeof sectorsTable.$inferSelect;
+export type Post = typeof postsTable.$inferSelect;
+export type InsertSector = z.infer<typeof insertSectorSchema>;
+export type InsertPost = z.infer<typeof insertPostSchema>;

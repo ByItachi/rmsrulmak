@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /b2b/
+Disallow: /yonetim/
+Disallow: /api/
+
+Sitemap: https://www.rmsrulmak.com/sitemap.xml

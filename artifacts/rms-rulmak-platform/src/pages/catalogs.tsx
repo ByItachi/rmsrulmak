@@ -11,6 +11,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useAuth } from "@workspace/replit-auth-web";
+import { PageIntro } from "@/components/page-intro";
 
 type Catalog = {
   id: string;
@@ -113,7 +114,7 @@ export function CatalogsPage() {
           </p>
         </div>
       </section>
-      <main className="mx-auto min-h-[380px] max-w-5xl px-5 py-10 lg:px-8 lg:py-16">
+      <main className="mx-auto min-h-[380px] max-w-7xl px-5 py-10 lg:px-8 lg:py-16">
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
             <Loader2 size={17} className="animate-spin" /> Kataloglar yükleniyor
@@ -363,6 +364,8 @@ export function CatalogAdminPage() {
       "access",
     );
     return (
+      <>
+      <PageIntro eyebrow="Katalog yönetimi" title="Yetkili giriş gerekli" description="PDF kataloglarını eklemek ve yayın durumlarını yönetmek için yetkili personel hesabınızla giriş yapın." />
       <main className="mx-auto max-w-xl px-5 py-20 lg:py-28">
         <section className="rounded-2xl border border-border bg-card p-7 shadow-sm sm:p-10">
           <p className="eyebrow">Personel alanı</p>
@@ -391,20 +394,17 @@ export function CatalogAdminPage() {
           </button>
         </section>
       </main>
+      </>
     );
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 lg:px-8 lg:py-14">
+    <>
+    <PageIntro eyebrow="Personel alanı" title="Katalog yönetimi" description="PDF kataloglarını ekleyin, yayın durumunu değiştirin veya kaldırın." />
+    <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
-          <p className="eyebrow">Personel alanı</p>
-          <h1 className="mt-3 font-display text-3xl font-semibold">
-            Katalog yönetimi
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {user?.email} · PDF ekleyin, yayın durumunu değiştirin veya kaldırın.
-          </p>
+          <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">{user?.email}</span> · PDF ekleyin, yayın durumunu değiştirin veya kaldırın.</p>
         </div>
         <button
           type="button"
@@ -674,5 +674,6 @@ export function CatalogAdminPage() {
         )}
       </section>
     </main>
+    </>
   );
 }

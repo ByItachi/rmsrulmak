@@ -22,56 +22,27 @@ import {
 
 const router: IRouter = Router();
 
-const sectors = [
-  {
-    name: "Demir ve Çelik",
-    slug: "demir-celik",
-    description:
-      "Yüksek ısı, yük ve sürekli çalışma koşulları için dayanıklı rulman ve güç aktarım çözümleri.",
-  },
-  {
-    name: "Madencilik",
-    slug: "madencilik",
-    description:
-      "Tozlu ve zorlu sahalarda ekipman ömrünü ve çalışma sürekliliğini destekleyen ürünler.",
-  },
-  {
-    name: "Kağıt ve Sanayi",
-    slug: "kagit-sanayi",
-    description:
-      "Üretim hatlarında hassasiyet, hız ve bakım verimliliği sağlayan teknik çözümler.",
-  },
-  {
-    name: "Çimento",
-    slug: "cimento",
-    description:
-      "Ağır hizmet uygulamalarında güvenilir hareket ve güç aktarımı için ürün seçimi.",
-  },
-  {
-    name: "Taşıma ve Depolama",
-    slug: "tasima-depolama",
-    description:
-      "Konveyör ve lojistik sistemlerinde kesintisiz hareket için doğru bileşenler.",
-  },
-  {
-    name: "Enerji",
-    slug: "enerji",
-    description:
-      "Enerji ekipmanlarında güvenilirlik, uzun ömür ve planlı bakım odaklı çözümler.",
-  },
-  {
-    name: "Tarım ve Gıda",
-    slug: "tarim-gida",
-    description:
-      "Hijyen, dayanıklılık ve zorlu çalışma ortamlarına uygun endüstriyel ürünler.",
-  },
-  {
-    name: "Otomotiv ve Makine",
-    slug: "otomotiv-makine",
-    description:
-      "Hassas ve yüksek performanslı makine sistemleri için rulman ve güç aktarım ürünleri.",
-  },
-];
+import { fallbackSectors as sectors } from "../lib/contentFallbacks";
+import { sectorsTable } from "@workspace/db";
+
+async function loadSectors() {
+  try {
+    const rows = await db
+      .select()
+      .from(sectorsTable)
+      .orderBy(asc(sectorsTable.position), asc(sectorsTable.id));
+    if (rows.length > 0) {
+      return rows.map((row) => ({
+        name: row.name,
+        slug: row.slug,
+        description: row.description,
+      }));
+    }
+  } catch {
+    // database unavailable — fall back to the static list below
+  }
+  return sectors;
+}
 
 function productImage(imageUrl: string): string {
   return imageUrl || "/brand/rulmak-icon-red.png";
@@ -288,7 +259,7 @@ router.get("/brands", async (_req, res): Promise<void> => {
 });
 
 router.get("/dashboard/summary", async (_req, res): Promise<void> => {
-  const [productCountRows, brandCountRows, categoryCountRows, products] =
+  const [productCountRows, brandCountRows, categoryCountRows, products, dbSectors] =
     await Promise.all([
       db.select({ value: count(productsTable.id) }).from(productsTable),
       db.select({ value: count(brandsTable.id) }).from(brandsTable),
@@ -308,6 +279,7 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
         .where(eq(productsTable.featured, true))
         .orderBy(asc(productsTable.name))
         .limit(4),
+      loadSectors(),
     ]);
 
   res.json(
@@ -315,8 +287,8 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
       productCount: Number(productCountRows[0]?.value ?? 0),
       brandCount: Number(brandCountRows[0]?.value ?? 0),
       categoryCount: Number(categoryCountRows[0]?.value ?? 0),
-      sectorCount: sectors.length,
-      sectors,
+      sectorCount: dbSectors.length,
+      sectors: dbSectors,
       featuredProducts: products.map(
         ({ product, brand: productBrand, category: productCategory }) => ({
           id: String(product.id),

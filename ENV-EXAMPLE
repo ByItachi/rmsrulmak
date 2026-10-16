@@ -1,0 +1,45 @@
+# ============================================================
+# RMS RULMAK — ÖRNEK ORTAM DEĞİŞKENLERİ (sır içermez)
+# Bu listedeki <...> alanlarını kendi değerlerinle doldur.
+# Sırlar asla bu dosyada saklanmaz; deploy ortamına eklenir.
+# ============================================================
+
+# ---- Frontend (Vite: .env / .env.production) ----
+# Production site adresi (canonical/OG için)
+VITE_SITE_URL=https://www.rmsrulmak.com
+
+# Google Analytics 4 ölçüm kimliği (GTM kullanmıyorsan)
+VITE_GA4_ID=<G-XXXXXXXXXX>
+
+# Google Tag Manager container ID (kullanılıyorsa)
+VITE_GTM_ID=<GTM-XXXXXXX>
+
+# Meta (Facebook/Instagram) Pixel ID
+VITE_META_PIXEL_ID=<XXXXXXXXXXXXXXX>
+
+# Dev ortamında API proxy hedefi (vite.config.ts okur)
+API_PROXY_URL=http://localhost:3000
+
+# ---- API Server (api-server/.env) ----
+PORT=3000
+
+# PostgreSQL bağlantısı (Docker: rms-rulmak-postgres)
+DATABASE_URL=postgresql://rulmak:<DB_SIFRE>@localhost:15433/rms_rulmak
+
+# CORS kaynak allowlist'i (virgülle ayrılmış; boşsa tüm origin'ler reddedilir)
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://www.rmsrulmak.com
+
+# Admin paneline erişebilecek e-posta adresleri (virgülle ayrılmış)
+CATALOG_ADMIN_EMAILS=<admin@rmsrulmak.com>
+
+# ---- OIDC / oturum (mevcut auth) ----
+ISSUER_URL=<https://oidc-provider.example.com>
+OIDC_CLIENT_ID=<CLIENT_ID>
+OIDC_CLIENT_SECRET=<CLIENT_SECRET>
+SESSION_TTL=604800000
+
+# ---- Postgres (Docker compose örneği) ----
+# POSTGRES_USER=rulmak
+# POSTGRES_PASSWORD=<DB_SIFRE>
+# POSTGRES_DB=rms_rulmak
+# ports: "15433:5432"

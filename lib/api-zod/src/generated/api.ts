@@ -477,3 +477,563 @@ export const CreateProductRequestResponse = zod.object({
 })
 
 
+/**
+ * @summary List industry sectors
+ */
+export const ListSectorsResponseItem = zod.object({
+  "name": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string()
+})
+export const ListSectorsResponse = zod.array(ListSectorsResponseItem)
+
+
+/**
+ * @summary List published blog posts
+ */
+export const ListPostsResponseItem = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "tag": zod.string(),
+  "excerpt": zod.string(),
+  "readTime": zod.number().int(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPostsResponse = zod.array(ListPostsResponseItem)
+
+
+/**
+ * @summary Get a published blog post by slug
+ */
+
+
+
+export const GetPostParams = zod.object({
+  "slug": zod.coerce.string().min(1)
+})
+
+export const GetPostResponse = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "tag": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "readTime": zod.number().int(),
+  "published": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List all brands for the admin panel
+ */
+export const ListAdminBrandsResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "logoUrl": zod.string(),
+  "productCount": zod.number().int()
+})
+export const ListAdminBrandsResponse = zod.array(ListAdminBrandsResponseItem)
+
+
+/**
+ * @summary Create a brand
+ */
+export const createBrandBodySlugMax = 80;
+
+export const createBrandBodyNameMax = 120;
+
+export const createBrandBodyDescriptionMax = 1000;
+
+export const createBrandBodyLogoUrlMax = 500;
+
+
+
+export const CreateBrandBody = zod.object({
+  "slug": zod.string().max(createBrandBodySlugMax).optional(),
+  "name": zod.string().min(1).max(createBrandBodyNameMax),
+  "description": zod.string().max(createBrandBodyDescriptionMax).optional(),
+  "logoUrl": zod.string().max(createBrandBodyLogoUrlMax).optional()
+})
+
+export const CreateBrandResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "logoUrl": zod.string(),
+  "productCount": zod.number().int()
+})
+
+
+/**
+ * @summary Update a brand
+ */
+
+
+
+export const UpdateBrandParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateBrandBodySlugMax = 80;
+
+export const updateBrandBodyNameMax = 120;
+
+export const updateBrandBodyDescriptionMax = 1000;
+
+export const updateBrandBodyLogoUrlMax = 500;
+
+
+
+export const UpdateBrandBody = zod.object({
+  "slug": zod.string().max(updateBrandBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateBrandBodyNameMax).optional(),
+  "description": zod.string().max(updateBrandBodyDescriptionMax).optional(),
+  "logoUrl": zod.string().max(updateBrandBodyLogoUrlMax).optional()
+})
+
+export const UpdateBrandResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "logoUrl": zod.string(),
+  "productCount": zod.number().int()
+})
+
+
+/**
+ * @summary Delete a brand
+ */
+
+
+
+export const DeleteBrandParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteBrandResponse = zod.void()
+
+
+/**
+ * @summary List all categories for the admin panel
+ */
+export const ListAdminCategoriesResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "productCount": zod.number().int()
+})
+export const ListAdminCategoriesResponse = zod.array(ListAdminCategoriesResponseItem)
+
+
+/**
+ * @summary Create a category
+ */
+export const createCategoryBodySlugMax = 80;
+
+export const createCategoryBodyNameMax = 120;
+
+export const createCategoryBodyDescriptionMax = 1000;
+
+
+
+export const CreateCategoryBody = zod.object({
+  "slug": zod.string().max(createCategoryBodySlugMax).optional(),
+  "name": zod.string().min(1).max(createCategoryBodyNameMax),
+  "description": zod.string().max(createCategoryBodyDescriptionMax).optional()
+})
+
+export const CreateCategoryResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "productCount": zod.number().int()
+})
+
+
+/**
+ * @summary Update a category
+ */
+
+
+
+export const UpdateCategoryParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateCategoryBodySlugMax = 80;
+
+export const updateCategoryBodyNameMax = 120;
+
+export const updateCategoryBodyDescriptionMax = 1000;
+
+
+
+export const UpdateCategoryBody = zod.object({
+  "slug": zod.string().max(updateCategoryBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateCategoryBodyNameMax).optional(),
+  "description": zod.string().max(updateCategoryBodyDescriptionMax).optional()
+})
+
+export const UpdateCategoryResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "productCount": zod.number().int()
+})
+
+
+/**
+ * @summary Delete a category
+ */
+
+
+
+export const DeleteCategoryParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteCategoryResponse = zod.void()
+
+
+/**
+ * @summary List all products for the admin panel
+ */
+export const ListAdminProductsResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "code": zod.string(),
+  "brandId": zod.number().int(),
+  "categoryId": zod.number().int(),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "imageUrl": zod.string(),
+  "featured": zod.boolean()
+})
+export const ListAdminProductsResponse = zod.array(ListAdminProductsResponseItem)
+
+
+/**
+ * @summary Create a product
+ */
+export const createProductBodySlugMax = 120;
+
+export const createProductBodyNameMax = 180;
+
+export const createProductBodyCodeMax = 60;
+
+
+
+export const createProductBodyShortDescriptionMax = 400;
+
+export const createProductBodyDescriptionMax = 5000;
+
+export const createProductBodyImageUrlMax = 500;
+
+
+
+export const CreateProductBody = zod.object({
+  "slug": zod.string().max(createProductBodySlugMax).optional(),
+  "name": zod.string().min(1).max(createProductBodyNameMax),
+  "code": zod.string().min(1).max(createProductBodyCodeMax),
+  "brandId": zod.number().int().min(1),
+  "categoryId": zod.number().int().min(1),
+  "shortDescription": zod.string().max(createProductBodyShortDescriptionMax),
+  "description": zod.string().max(createProductBodyDescriptionMax).optional(),
+  "imageUrl": zod.string().max(createProductBodyImageUrlMax).optional(),
+  "featured": zod.boolean().optional()
+})
+
+export const CreateProductResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "code": zod.string(),
+  "brandId": zod.number().int(),
+  "categoryId": zod.number().int(),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "imageUrl": zod.string(),
+  "featured": zod.boolean()
+})
+
+
+/**
+ * @summary Update a product
+ */
+
+
+
+export const UpdateProductParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateProductBodySlugMax = 120;
+
+export const updateProductBodyNameMax = 180;
+
+export const updateProductBodyCodeMax = 60;
+
+
+
+export const updateProductBodyShortDescriptionMax = 400;
+
+export const updateProductBodyDescriptionMax = 5000;
+
+export const updateProductBodyImageUrlMax = 500;
+
+
+
+export const UpdateProductBody = zod.object({
+  "slug": zod.string().max(updateProductBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateProductBodyNameMax).optional(),
+  "code": zod.string().min(1).max(updateProductBodyCodeMax).optional(),
+  "brandId": zod.number().int().min(1).optional(),
+  "categoryId": zod.number().int().min(1).optional(),
+  "shortDescription": zod.string().max(updateProductBodyShortDescriptionMax).optional(),
+  "description": zod.string().max(updateProductBodyDescriptionMax).optional(),
+  "imageUrl": zod.string().max(updateProductBodyImageUrlMax).optional(),
+  "featured": zod.boolean().optional()
+})
+
+export const UpdateProductResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "code": zod.string(),
+  "brandId": zod.number().int(),
+  "categoryId": zod.number().int(),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "imageUrl": zod.string(),
+  "featured": zod.boolean()
+})
+
+
+/**
+ * @summary Delete a product
+ */
+
+
+
+export const DeleteProductParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteProductResponse = zod.void()
+
+
+/**
+ * @summary List all sectors for the admin panel
+ */
+export const ListAdminSectorsResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int()
+})
+export const ListAdminSectorsResponse = zod.array(ListAdminSectorsResponseItem)
+
+
+/**
+ * @summary Create a sector
+ */
+export const createSectorBodySlugMax = 80;
+
+export const createSectorBodyNameMax = 120;
+
+export const createSectorBodyDescriptionMax = 1000;
+
+
+
+export const CreateSectorBody = zod.object({
+  "slug": zod.string().max(createSectorBodySlugMax).optional(),
+  "name": zod.string().min(1).max(createSectorBodyNameMax),
+  "description": zod.string().max(createSectorBodyDescriptionMax).optional(),
+  "position": zod.number().int().optional()
+})
+
+export const CreateSectorResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int()
+})
+
+
+/**
+ * @summary Update a sector
+ */
+
+
+
+export const UpdateSectorParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateSectorBodySlugMax = 80;
+
+export const updateSectorBodyNameMax = 120;
+
+export const updateSectorBodyDescriptionMax = 1000;
+
+
+
+export const UpdateSectorBody = zod.object({
+  "slug": zod.string().max(updateSectorBodySlugMax).optional(),
+  "name": zod.string().min(1).max(updateSectorBodyNameMax).optional(),
+  "description": zod.string().max(updateSectorBodyDescriptionMax).optional(),
+  "position": zod.number().int().optional()
+})
+
+export const UpdateSectorResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "position": zod.number().int()
+})
+
+
+/**
+ * @summary Delete a sector
+ */
+
+
+
+export const DeleteSectorParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteSectorResponse = zod.void()
+
+
+/**
+ * @summary List all blog posts for the admin panel
+ */
+export const ListAdminPostsResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "tag": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "readTime": zod.number().int(),
+  "published": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminPostsResponse = zod.array(ListAdminPostsResponseItem)
+
+
+/**
+ * @summary Create a blog post
+ */
+export const createPostBodySlugMax = 120;
+
+export const createPostBodyTitleMin = 2;
+export const createPostBodyTitleMax = 200;
+
+export const createPostBodyTagMax = 60;
+
+export const createPostBodyExcerptMax = 400;
+
+export const createPostBodyBodyMax = 20000;
+
+export const createPostBodyReadTimeMax = 120;
+
+
+
+export const CreatePostBody = zod.object({
+  "slug": zod.string().max(createPostBodySlugMax).optional(),
+  "title": zod.string().min(createPostBodyTitleMin).max(createPostBodyTitleMax),
+  "tag": zod.string().max(createPostBodyTagMax).optional(),
+  "excerpt": zod.string().max(createPostBodyExcerptMax).optional(),
+  "body": zod.string().max(createPostBodyBodyMax).optional(),
+  "readTime": zod.number().int().min(1).max(createPostBodyReadTimeMax).optional(),
+  "published": zod.boolean().optional()
+})
+
+export const CreatePostResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "tag": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "readTime": zod.number().int(),
+  "published": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a blog post
+ */
+
+
+
+export const UpdatePostParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updatePostBodySlugMax = 120;
+
+export const updatePostBodyTitleMin = 2;
+export const updatePostBodyTitleMax = 200;
+
+export const updatePostBodyTagMax = 60;
+
+export const updatePostBodyExcerptMax = 400;
+
+export const updatePostBodyBodyMax = 20000;
+
+export const updatePostBodyReadTimeMax = 120;
+
+
+
+export const UpdatePostBody = zod.object({
+  "slug": zod.string().max(updatePostBodySlugMax).optional(),
+  "title": zod.string().min(updatePostBodyTitleMin).max(updatePostBodyTitleMax).optional(),
+  "tag": zod.string().max(updatePostBodyTagMax).optional(),
+  "excerpt": zod.string().max(updatePostBodyExcerptMax).optional(),
+  "body": zod.string().max(updatePostBodyBodyMax).optional(),
+  "readTime": zod.number().int().min(1).max(updatePostBodyReadTimeMax).optional(),
+  "published": zod.boolean().optional()
+})
+
+export const UpdatePostResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "tag": zod.string(),
+  "excerpt": zod.string(),
+  "body": zod.string(),
+  "readTime": zod.number().int(),
+  "published": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a blog post
+ */
+
+
+
+export const DeletePostParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeletePostResponse = zod.void()
+
+

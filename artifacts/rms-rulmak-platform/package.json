@@ -75,6 +75,8 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@workspace/replit-auth-web": "workspace:*"
+    "@workspace/replit-auth-web": "workspace:*",
+    "pdfjs-dist": "^4.10.38",
+    "react-pageflip": "2.0.3"
   }
 }

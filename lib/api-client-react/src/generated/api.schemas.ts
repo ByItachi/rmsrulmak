@@ -251,6 +251,250 @@ export interface SubmissionReceipt {
   message: string;
 }
 
+export interface PostSummary {
+  slug: string;
+  title: string;
+  tag: string;
+  excerpt: string;
+  readTime: number;
+  createdAt: string;
+}
+
+export interface Post {
+  slug: string;
+  title: string;
+  tag: string;
+  excerpt: string;
+  body: string;
+  readTime: number;
+  published: boolean;
+  createdAt: string;
+}
+
+export interface AdminBrand {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  logoUrl: string;
+  productCount: number;
+}
+
+export interface BrandInput {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 1000 */
+  description?: string;
+  /** @maxLength 500 */
+  logoUrl?: string;
+}
+
+export interface BrandUpdate {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 1000 */
+  description?: string;
+  /** @maxLength 500 */
+  logoUrl?: string;
+}
+
+export interface AdminCategory {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  productCount: number;
+}
+
+export interface CategoryInput {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 1000 */
+  description?: string;
+}
+
+export interface CategoryUpdate {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 1000 */
+  description?: string;
+}
+
+export interface AdminProduct {
+  id: string;
+  slug: string;
+  name: string;
+  code: string;
+  brandId: number;
+  categoryId: number;
+  shortDescription: string;
+  description: string;
+  imageUrl: string;
+  featured: boolean;
+}
+
+export interface ProductInput {
+  /** @maxLength 120 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  name: string;
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  code: string;
+  /** @minimum 1 */
+  brandId: number;
+  /** @minimum 1 */
+  categoryId: number;
+  /** @maxLength 400 */
+  shortDescription: string;
+  /** @maxLength 5000 */
+  description?: string;
+  /** @maxLength 500 */
+  imageUrl?: string;
+  featured?: boolean;
+}
+
+export interface ProductUpdate {
+  /** @maxLength 120 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  name?: string;
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  code?: string;
+  /** @minimum 1 */
+  brandId?: number;
+  /** @minimum 1 */
+  categoryId?: number;
+  /** @maxLength 400 */
+  shortDescription?: string;
+  /** @maxLength 5000 */
+  description?: string;
+  /** @maxLength 500 */
+  imageUrl?: string;
+  featured?: boolean;
+}
+
+export interface AdminSector {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  position: number;
+}
+
+export interface SectorInput {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 1000 */
+  description?: string;
+  position?: number;
+}
+
+export interface SectorUpdate {
+  /** @maxLength 80 */
+  slug?: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name?: string;
+  /** @maxLength 1000 */
+  description?: string;
+  position?: number;
+}
+
+export interface AdminPost {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  excerpt: string;
+  body: string;
+  readTime: number;
+  published: boolean;
+  createdAt: string;
+}
+
+export interface PostInput {
+  /** @maxLength 120 */
+  slug?: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 60 */
+  tag?: string;
+  /** @maxLength 400 */
+  excerpt?: string;
+  /** @maxLength 20000 */
+  body?: string;
+  /**
+     * @minimum 1
+     * @maximum 120
+     */
+  readTime?: number;
+  published?: boolean;
+}
+
+export interface PostUpdate {
+  /** @maxLength 120 */
+  slug?: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title?: string;
+  /** @maxLength 60 */
+  tag?: string;
+  /** @maxLength 400 */
+  excerpt?: string;
+  /** @maxLength 20000 */
+  body?: string;
+  /**
+     * @minimum 1
+     * @maximum 120
+     */
+  readTime?: number;
+  published?: boolean;
+}
+
 export type AuthorizationSessionHeaderParameter = string;
 
 /**

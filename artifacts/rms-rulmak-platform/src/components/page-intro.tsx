@@ -1,0 +1,3 @@
+export function PageIntro({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
+  return <section className="shell-grid border-b border-border bg-muted/35"><div className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20"><p className="eyebrow reveal">{eyebrow}</p><h1 className="font-display reveal reveal-delay-1 mt-4 max-w-4xl text-4xl font-semibold leading-[1.06] tracking-[-.045em] text-foreground md:text-6xl">{title}</h1>{description && <p className="reveal reveal-delay-2 mt-6 max-w-2xl text-base leading-7 text-muted-foreground">{description}</p>}</div></section>;
+}
