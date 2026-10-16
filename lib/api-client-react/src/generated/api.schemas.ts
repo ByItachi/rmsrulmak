@@ -495,6 +495,120 @@ export interface PostUpdate {
   published?: boolean;
 }
 
+export interface PublicSlider {
+  title: string;
+  subtitle?: string;
+  image: string;
+  href: string;
+  placement: string;
+}
+
+export interface AdminSlider {
+  id: string;
+  placement: string;
+  title: string;
+  subtitle?: string;
+  image: string;
+  href: string;
+  position: number;
+  published: boolean;
+}
+
+export interface SliderInput {
+  /** @maxLength 40 */
+  placement?: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 300 */
+  subtitle?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  image: string;
+  /** @maxLength 500 */
+  href?: string;
+  /**
+     * @minimum 0
+     * @maximum 10000
+     */
+  position?: number;
+  published?: boolean;
+}
+
+export interface SliderUpdate {
+  /** @maxLength 40 */
+  placement?: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title?: string;
+  /** @maxLength 300 */
+  subtitle?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  image?: string;
+  /** @maxLength 500 */
+  href?: string;
+  /**
+     * @minimum 0
+     * @maximum 10000
+     */
+  position?: number;
+  published?: boolean;
+}
+
+export interface PublicSiteSection {
+  key: string;
+  page: string;
+  label: string;
+  body: string;
+}
+
+export interface AdminSiteSection {
+  id: string;
+  key: string;
+  page: string;
+  label: string;
+  body: string;
+  updatedAt?: string;
+}
+
+export interface SiteSectionInput {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  key: string;
+  /** @maxLength 60 */
+  page?: string;
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  label: string;
+  /** @maxLength 20000 */
+  body: string;
+}
+
+export interface SiteSectionUpdate {
+  /** @maxLength 60 */
+  page?: string;
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  label?: string;
+  /** @maxLength 20000 */
+  body?: string;
+}
+
 export type AuthorizationSessionHeaderParameter = string;
 
 /**

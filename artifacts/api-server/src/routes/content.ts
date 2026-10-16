@@ -1,13 +1,19 @@
 import { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
-import { db, postsTable, sectorsTable } from "@workspace/db";
+import {
+  db,
+  postsTable,
+  sectorsTable,
+  siteSectionsTable,
+  slidersTable,
+} from "@workspace/db";
 import {
   GetPostParams,
   GetPostResponse,
   ListPostsResponse,
   ListSectorsResponse,
 } from "@workspace/api-zod";
-import { fallbackSectors } from "../lib/contentFallbacks";
+import { fallbackSectors, fallbackSliders } from "../lib/contentFallbacks";
 
 const router: IRouter = Router();
 
@@ -26,6 +32,42 @@ router.get("/sectors", async (_req, res): Promise<void> => {
     : fallbackSectors;
 
   res.json(ListSectorsResponse.parse(payload));
+});
+
+router.get("/sliders", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(slidersTable)
+    .where(eq(slidersTable.published, true))
+    .orderBy(asc(slidersTable.position), asc(slidersTable.id));
+
+  const payload = rows.length
+    ? rows.map((row) => ({
+        title: row.title,
+        subtitle: row.subtitle,
+        image: row.image,
+        href: row.href,
+        placement: row.placement,
+      }))
+    : fallbackSliders;
+
+  res.json(payload);
+});
+
+router.get("/site-sections", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(siteSectionsTable)
+    .orderBy(asc(siteSectionsTable.id));
+
+  res.json(
+    rows.map((row) => ({
+      key: row.key,
+      page: row.page,
+      label: row.label,
+      body: row.body,
+    })),
+  );
 });
 
 router.get("/posts", async (_req, res): Promise<void> => {

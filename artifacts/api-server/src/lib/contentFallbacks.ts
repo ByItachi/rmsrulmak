@@ -64,6 +64,51 @@ const TR_MAP: Record<string, string> = {
   Ç: "c",
 };
 
+export const fallbackSliders = [
+  {
+    title: "Koyo Japon teknolojisi rulmanları",
+    subtitle: "",
+    image: "/hero/slide-koyo.jpg",
+    href: "/kataloglar/teknik/koyo",
+    placement: "hero",
+  },
+  {
+    title: "Japon hassasiyetinde NSK mükemmeliyeti",
+    subtitle: "",
+    image: "/hero/slide-nsk.jpg",
+    href: "/kataloglar/teknik/nsk",
+    placement: "hero",
+  },
+  {
+    title: "Alman mühendisliğinde mükemmellik",
+    subtitle: "",
+    image: "/hero/slide-schaeffler.jpg",
+    href: "/kataloglar/teknik/schaeffler",
+    placement: "hero",
+  },
+  {
+    title: "Gates ile endüstriyel güç aktarımı",
+    subtitle: "",
+    image: "/hero/slide-gates.jpg",
+    href: "/kataloglar/teknik/gates",
+    placement: "hero",
+  },
+  {
+    title: "Japon mühendisliğinde güven ve verimlilik",
+    subtitle: "",
+    image: "/hero/slide-ntn.jpg",
+    href: "/kataloglar/teknik/ntn",
+    placement: "hero",
+  },
+  {
+    title: "Konik rulmanlarla endüstriyel güç",
+    subtitle: "",
+    image: "/hero/slide-timken.jpg",
+    href: "/kataloglar/teknik/timken",
+    placement: "hero",
+  },
+];
+
 export function slugify(value: string): string {
   const mapped = value.replace(/[ıİşŞğĞüÜöÖçÇ]/g, (ch) => TR_MAP[ch] ?? ch);
   return (

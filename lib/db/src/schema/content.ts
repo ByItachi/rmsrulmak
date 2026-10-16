@@ -42,6 +42,36 @@ export const postsTable = pgTable("posts", {
     .$onUpdate(() => new Date()),
 });
 
+export const slidersTable = pgTable("sliders", {
+  id: serial("id").primaryKey(),
+  placement: text("placement").notNull().default("hero"),
+  title: text("title").notNull(),
+  subtitle: text("subtitle").notNull().default(""),
+  image: text("image").notNull(),
+  href: text("href").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const siteSectionsTable = pgTable("site_sections", {
+  id: serial("id").primaryKey(),
+  page: text("page").notNull().default("home"),
+  key: text("key").notNull().unique(),
+  label: text("label").notNull(),
+  body: text("body").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 export const insertSectorSchema = createInsertSchema(sectorsTable).omit({
   id: true,
   createdAt: true,
@@ -54,7 +84,22 @@ export const insertPostSchema = createInsertSchema(postsTable).omit({
   updatedAt: true,
 });
 
+export const insertSliderSchema = createInsertSchema(slidersTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSiteSectionSchema = createInsertSchema(siteSectionsTable).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type Sector = typeof sectorsTable.$inferSelect;
 export type Post = typeof postsTable.$inferSelect;
+export type Slider = typeof slidersTable.$inferSelect;
+export type SiteSection = typeof siteSectionsTable.$inferSelect;
 export type InsertSector = z.infer<typeof insertSectorSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
+export type InsertSlider = z.infer<typeof insertSliderSchema>;
+export type InsertSiteSection = z.infer<typeof insertSiteSectionSchema>;

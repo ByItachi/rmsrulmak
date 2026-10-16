@@ -483,6 +483,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /sliders:
+    get:
+      operationId: listSliders
+      tags: [content]
+      summary: List published hero sliders
+      responses:
+        "200":
+          description: Slider list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicSlider"
+  /site-sections:
+    get:
+      operationId: listSiteSections
+      tags: [content]
+      summary: List all editable site sections
+      responses:
+        "200":
+          description: Site section list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicSiteSection"
   /admin/brands:
     get:
       operationId: listAdminBrands
@@ -913,6 +941,178 @@ paths:
           description: Manager access required
         "404":
           description: Post not found
+  /admin/sliders:
+    get:
+      operationId: listAdminSliders
+      tags: [content-admin]
+      summary: List all sliders for the admin panel
+      responses:
+        "200":
+          description: Slider list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSlider"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    post:
+      operationId: createSlider
+      tags: [content-admin]
+      summary: Create a slider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SliderInput"
+      responses:
+        "201":
+          description: Slider created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSlider"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/sliders/{id}:
+    patch:
+      operationId: updateSlider
+      tags: [content-admin]
+      summary: Update a slider
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SliderUpdate"
+      responses:
+        "200":
+          description: Updated slider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSlider"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Slider not found
+    delete:
+      operationId: deleteSlider
+      tags: [content-admin]
+      summary: Delete a slider
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "204":
+          description: Slider deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Slider not found
+  /admin/site-sections:
+    get:
+      operationId: listAdminSiteSections
+      tags: [content-admin]
+      summary: List all site sections for the admin panel
+      responses:
+        "200":
+          description: Site section list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSiteSection"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    post:
+      operationId: createSiteSection
+      tags: [content-admin]
+      summary: Create a site section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSectionInput"
+      responses:
+        "201":
+          description: Site section created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSection"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/site-sections/{id}:
+    patch:
+      operationId: updateSiteSection
+      tags: [content-admin]
+      summary: Update a site section
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSectionUpdate"
+      responses:
+        "200":
+          description: Updated site section
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSection"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Site section not found
+    delete:
+      operationId: deleteSiteSection
+      tags: [content-admin]
+      summary: Delete a site section
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "204":
+          description: Site section deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+        "404":
+          description: Site section not found
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -1814,3 +2014,176 @@ components:
         published:
           type: boolean
 
+
+    PublicSlider:
+      type: object
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        image:
+          type: string
+        href:
+          type: string
+        placement:
+          type: string
+      required:
+        - title
+        - image
+        - href
+        - placement
+    AdminSlider:
+      type: object
+      properties:
+        id:
+          type: string
+        placement:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        image:
+          type: string
+        href:
+          type: string
+        position:
+          type: integer
+        published:
+          type: boolean
+      required:
+        - id
+        - placement
+        - title
+        - image
+        - href
+        - position
+        - published
+    SliderInput:
+      type: object
+      properties:
+        placement:
+          type: string
+          maxLength: 40
+        title:
+          type: string
+          minLength: 2
+          maxLength: 200
+        subtitle:
+          type: string
+          maxLength: 300
+        image:
+          type: string
+          minLength: 1
+          maxLength: 500
+        href:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        published:
+          type: boolean
+      required:
+        - title
+        - image
+    SliderUpdate:
+      type: object
+      properties:
+        placement:
+          type: string
+          maxLength: 40
+        title:
+          type: string
+          minLength: 2
+          maxLength: 200
+        subtitle:
+          type: string
+          maxLength: 300
+        image:
+          type: string
+          minLength: 1
+          maxLength: 500
+        href:
+          type: string
+          maxLength: 500
+        position:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        published:
+          type: boolean
+    PublicSiteSection:
+      type: object
+      properties:
+        key:
+          type: string
+        page:
+          type: string
+        label:
+          type: string
+        body:
+          type: string
+      required:
+        - key
+        - page
+        - label
+        - body
+    AdminSiteSection:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        page:
+          type: string
+        label:
+          type: string
+        body:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - key
+        - page
+        - label
+        - body
+    SiteSectionInput:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 2
+          maxLength: 120
+        page:
+          type: string
+          maxLength: 60
+        label:
+          type: string
+          minLength: 2
+          maxLength: 160
+        body:
+          type: string
+          maxLength: 20000
+      required:
+        - key
+        - label
+        - body
+    SiteSectionUpdate:
+      type: object
+      properties:
+        page:
+          type: string
+          maxLength: 60
+        label:
+          type: string
+          minLength: 2
+          maxLength: 160
+        body:
+          type: string
+          maxLength: 20000

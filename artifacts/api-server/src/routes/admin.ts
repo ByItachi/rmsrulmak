@@ -7,6 +7,8 @@ import {
   postsTable,
   productsTable,
   sectorsTable,
+  slidersTable,
+  siteSectionsTable,
 } from "@workspace/db";
 import {
   CreateBrandBody,
@@ -14,16 +16,22 @@ import {
   CreatePostBody,
   CreateProductBody,
   CreateSectorBody,
+  CreateSiteSectionBody,
+  CreateSliderBody,
   DeleteBrandParams,
   DeleteCategoryParams,
   DeletePostParams,
   DeleteProductParams,
   DeleteSectorParams,
+  DeleteSiteSectionParams,
+  DeleteSliderParams,
   ListAdminBrandsResponse,
   ListAdminCategoriesResponse,
   ListAdminPostsResponse,
   ListAdminProductsResponse,
   ListAdminSectorsResponse,
+  ListAdminSiteSectionsResponse,
+  ListAdminSlidersResponse,
   UpdateBrandBody,
   UpdateBrandParams,
   UpdateCategoryBody,
@@ -34,6 +42,10 @@ import {
   UpdateProductParams,
   UpdateSectorBody,
   UpdateSectorParams,
+  UpdateSiteSectionBody,
+  UpdateSiteSectionParams,
+  UpdateSliderBody,
+  UpdateSliderParams,
 } from "@workspace/api-zod";
 import { requireCatalogAdmin } from "../middlewares/catalogAdmin";
 import { isUniqueViolation, slugify } from "../lib/contentFallbacks";
@@ -568,3 +580,164 @@ router.delete("/admin/posts/:id", async (req, res): Promise<void> => {
 });
 
 export default router;
+
+// ---------------------------------------------------------------------------
+// Sliders
+// ---------------------------------------------------------------------------
+
+function sliderDto(row: typeof slidersTable.$inferSelect) {
+  return {
+    id: String(row.id),
+    placement: row.placement,
+    title: row.title,
+    subtitle: row.subtitle,
+    image: row.image,
+    href: row.href,
+    position: row.position,
+    published: row.published,
+  };
+}
+
+router.get("/admin/sliders", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(slidersTable)
+    .orderBy(asc(slidersTable.position), asc(slidersTable.id));
+  res.json(rows.map(sliderDto));
+});
+
+router.post("/admin/sliders", async (req, res): Promise<void> => {
+  const parsed = CreateSliderBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const row = await db
+    .insert(slidersTable)
+    .values(parsed.data)
+    .returning();
+  res.status(201).json(sliderDto(row[0]));
+});
+
+router.patch("/admin/sliders/:id", async (req, res): Promise<void> => {
+  const params = UpdateSliderParams.safeParse(req.params);
+  const body = UpdateSliderBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .update(slidersTable)
+    .set(body.data)
+    .where(eq(slidersTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Slider bulunamadı" });
+    return;
+  }
+  res.json(sliderDto(row));
+});
+
+router.delete("/admin/sliders/:id", async (req, res): Promise<void> => {
+  const params = DeleteSliderParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .delete(slidersTable)
+    .where(eq(slidersTable.id, params.data.id))
+    .returning({ id: slidersTable.id });
+  if (!row) {
+    res.status(404).json({ error: "Slider bulunamadı" });
+    return;
+  }
+  res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// Site sections
+// ---------------------------------------------------------------------------
+
+function siteSectionDto(row: typeof siteSectionsTable.$inferSelect) {
+  return {
+    id: String(row.id),
+    key: row.key,
+    page: row.page,
+    label: row.label,
+    body: row.body,
+  };
+}
+
+router.get("/admin/site-sections", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(siteSectionsTable)
+    .orderBy(asc(siteSectionsTable.page), asc(siteSectionsTable.id));
+  res.json(rows.map(siteSectionDto));
+});
+
+router.post("/admin/site-sections", async (req, res): Promise<void> => {
+  const parsed = CreateSiteSectionBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  try {
+    const row = await db
+      .insert(siteSectionsTable)
+      .values(parsed.data)
+      .returning();
+    res.status(201).json(siteSectionDto(row[0]));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      slugConflict(res);
+      return;
+    }
+    throw error;
+  }
+});
+
+router.patch("/admin/site-sections/:id", async (req, res): Promise<void> => {
+  const params = UpdateSiteSectionParams.safeParse(req.params);
+  const body = UpdateSiteSectionBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  try {
+    const [row] = await db
+      .update(siteSectionsTable)
+      .set(body.data)
+      .where(eq(siteSectionsTable.id, params.data.id))
+      .returning();
+    if (!row) {
+      res.status(404).json({ error: "Bölüm bulunamadı" });
+      return;
+    }
+    res.json(siteSectionDto(row));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      slugConflict(res);
+      return;
+    }
+    throw error;
+  }
+});
+
+router.delete("/admin/site-sections/:id", async (req, res): Promise<void> => {
+  const params = DeleteSiteSectionParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .delete(siteSectionsTable)
+    .where(eq(siteSectionsTable.id, params.data.id))
+    .returning({ id: siteSectionsTable.id });
+  if (!row) {
+    res.status(404).json({ error: "Bölüm bulunamadı" });
+    return;
+  }
+  res.status(204).end();
+});

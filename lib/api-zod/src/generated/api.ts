@@ -525,6 +525,31 @@ export const GetPostResponse = zod.object({
 
 
 /**
+ * @summary List published hero sliders
+ */
+export const ListSlidersResponseItem = zod.object({
+  "title": zod.string(),
+  "subtitle": zod.string().optional(),
+  "image": zod.string(),
+  "href": zod.string(),
+  "placement": zod.string()
+})
+export const ListSlidersResponse = zod.array(ListSlidersResponseItem)
+
+
+/**
+ * @summary List all editable site sections
+ */
+export const ListSiteSectionsResponseItem = zod.object({
+  "key": zod.string(),
+  "page": zod.string(),
+  "label": zod.string(),
+  "body": zod.string()
+})
+export const ListSiteSectionsResponse = zod.array(ListSiteSectionsResponseItem)
+
+
+/**
  * @summary List all brands for the admin panel
  */
 export const ListAdminBrandsResponseItem = zod.object({
@@ -1035,5 +1060,217 @@ export const DeletePostParams = zod.object({
 })
 
 export const DeletePostResponse = zod.void()
+
+
+/**
+ * @summary List all sliders for the admin panel
+ */
+export const ListAdminSlidersResponseItem = zod.object({
+  "id": zod.string(),
+  "placement": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string().optional(),
+  "image": zod.string(),
+  "href": zod.string(),
+  "position": zod.number().int(),
+  "published": zod.boolean()
+})
+export const ListAdminSlidersResponse = zod.array(ListAdminSlidersResponseItem)
+
+
+/**
+ * @summary Create a slider
+ */
+export const createSliderBodyPlacementMax = 40;
+
+export const createSliderBodyTitleMin = 2;
+export const createSliderBodyTitleMax = 200;
+
+export const createSliderBodySubtitleMax = 300;
+
+export const createSliderBodyImageMax = 500;
+
+export const createSliderBodyHrefMax = 500;
+
+export const createSliderBodyPositionMin = 0;
+export const createSliderBodyPositionMax = 10000;
+
+
+
+export const CreateSliderBody = zod.object({
+  "placement": zod.string().max(createSliderBodyPlacementMax).optional(),
+  "title": zod.string().min(createSliderBodyTitleMin).max(createSliderBodyTitleMax),
+  "subtitle": zod.string().max(createSliderBodySubtitleMax).optional(),
+  "image": zod.string().min(1).max(createSliderBodyImageMax),
+  "href": zod.string().max(createSliderBodyHrefMax).optional(),
+  "position": zod.number().int().min(createSliderBodyPositionMin).max(createSliderBodyPositionMax).optional(),
+  "published": zod.boolean().optional()
+})
+
+export const CreateSliderResponse = zod.object({
+  "id": zod.string(),
+  "placement": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string().optional(),
+  "image": zod.string(),
+  "href": zod.string(),
+  "position": zod.number().int(),
+  "published": zod.boolean()
+})
+
+
+/**
+ * @summary Update a slider
+ */
+
+
+
+export const UpdateSliderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateSliderBodyPlacementMax = 40;
+
+export const updateSliderBodyTitleMin = 2;
+export const updateSliderBodyTitleMax = 200;
+
+export const updateSliderBodySubtitleMax = 300;
+
+export const updateSliderBodyImageMax = 500;
+
+export const updateSliderBodyHrefMax = 500;
+
+export const updateSliderBodyPositionMin = 0;
+export const updateSliderBodyPositionMax = 10000;
+
+
+
+export const UpdateSliderBody = zod.object({
+  "placement": zod.string().max(updateSliderBodyPlacementMax).optional(),
+  "title": zod.string().min(updateSliderBodyTitleMin).max(updateSliderBodyTitleMax).optional(),
+  "subtitle": zod.string().max(updateSliderBodySubtitleMax).optional(),
+  "image": zod.string().min(1).max(updateSliderBodyImageMax).optional(),
+  "href": zod.string().max(updateSliderBodyHrefMax).optional(),
+  "position": zod.number().int().min(updateSliderBodyPositionMin).max(updateSliderBodyPositionMax).optional(),
+  "published": zod.boolean().optional()
+})
+
+export const UpdateSliderResponse = zod.object({
+  "id": zod.string(),
+  "placement": zod.string(),
+  "title": zod.string(),
+  "subtitle": zod.string().optional(),
+  "image": zod.string(),
+  "href": zod.string(),
+  "position": zod.number().int(),
+  "published": zod.boolean()
+})
+
+
+/**
+ * @summary Delete a slider
+ */
+
+
+
+export const DeleteSliderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteSliderResponse = zod.void()
+
+
+/**
+ * @summary List all site sections for the admin panel
+ */
+export const ListAdminSiteSectionsResponseItem = zod.object({
+  "id": zod.string(),
+  "key": zod.string(),
+  "page": zod.string(),
+  "label": zod.string(),
+  "body": zod.string(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListAdminSiteSectionsResponse = zod.array(ListAdminSiteSectionsResponseItem)
+
+
+/**
+ * @summary Create a site section
+ */
+export const createSiteSectionBodyKeyMin = 2;
+export const createSiteSectionBodyKeyMax = 120;
+
+export const createSiteSectionBodyPageMax = 60;
+
+export const createSiteSectionBodyLabelMin = 2;
+export const createSiteSectionBodyLabelMax = 160;
+
+export const createSiteSectionBodyBodyMax = 20000;
+
+
+
+export const CreateSiteSectionBody = zod.object({
+  "key": zod.string().min(createSiteSectionBodyKeyMin).max(createSiteSectionBodyKeyMax),
+  "page": zod.string().max(createSiteSectionBodyPageMax).optional(),
+  "label": zod.string().min(createSiteSectionBodyLabelMin).max(createSiteSectionBodyLabelMax),
+  "body": zod.string().max(createSiteSectionBodyBodyMax)
+})
+
+export const CreateSiteSectionResponse = zod.object({
+  "id": zod.string(),
+  "key": zod.string(),
+  "page": zod.string(),
+  "label": zod.string(),
+  "body": zod.string(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a site section
+ */
+
+
+
+export const UpdateSiteSectionParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateSiteSectionBodyPageMax = 60;
+
+export const updateSiteSectionBodyLabelMin = 2;
+export const updateSiteSectionBodyLabelMax = 160;
+
+export const updateSiteSectionBodyBodyMax = 20000;
+
+
+
+export const UpdateSiteSectionBody = zod.object({
+  "page": zod.string().max(updateSiteSectionBodyPageMax).optional(),
+  "label": zod.string().min(updateSiteSectionBodyLabelMin).max(updateSiteSectionBodyLabelMax).optional(),
+  "body": zod.string().max(updateSiteSectionBodyBodyMax).optional()
+})
+
+export const UpdateSiteSectionResponse = zod.object({
+  "id": zod.string(),
+  "key": zod.string(),
+  "page": zod.string(),
+  "label": zod.string(),
+  "body": zod.string(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Delete a site section
+ */
+
+
+
+export const DeleteSiteSectionParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteSiteSectionResponse = zod.void()
 
 

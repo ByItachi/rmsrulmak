@@ -25,6 +25,8 @@ import type {
   AdminPost,
   AdminProduct,
   AdminSector,
+  AdminSiteSection,
+  AdminSlider,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   Brand,
@@ -57,9 +59,15 @@ import type {
   ProductList,
   ProductRequestInput,
   ProductUpdate,
+  PublicSiteSection,
+  PublicSlider,
   Sector,
   SectorInput,
   SectorUpdate,
+  SiteSectionInput,
+  SiteSectionUpdate,
+  SliderInput,
+  SliderUpdate,
   SubmissionReceipt,
   UpdateCatalogBody
 } from './api.schemas';
@@ -2029,6 +2037,160 @@ export function useGetPost<TData = Awaited<ReturnType<typeof getPost>>, TError =
 
 
 
+export const getListSlidersUrl = () => {
+
+
+
+
+  return `/api/sliders`
+}
+
+/**
+ * @summary List published hero sliders
+ */
+export const listSliders = async ( options?: Parameters<typeof customFetch>[1]): Promise<PublicSlider[]> => {
+
+  return customFetch<PublicSlider[]>(getListSlidersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSlidersQueryKey = () => {
+    return [
+    `/api/sliders`
+    ] as const;
+    }
+
+
+export const getListSlidersQueryOptions = <TData = Awaited<ReturnType<typeof listSliders>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSliders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSlidersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSliders>>> = ({ signal }) => listSliders({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSliders>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSlidersQueryResult = NonNullable<Awaited<ReturnType<typeof listSliders>>>
+export type ListSlidersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List published hero sliders
+ */
+
+export function useListSliders<TData = Awaited<ReturnType<typeof listSliders>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSliders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSlidersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListSiteSectionsUrl = () => {
+
+
+
+
+  return `/api/site-sections`
+}
+
+/**
+ * @summary List all editable site sections
+ */
+export const listSiteSections = async ( options?: Parameters<typeof customFetch>[1]): Promise<PublicSiteSection[]> => {
+
+  return customFetch<PublicSiteSection[]>(getListSiteSectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSiteSectionsQueryKey = () => {
+    return [
+    `/api/site-sections`
+    ] as const;
+    }
+
+
+export const getListSiteSectionsQueryOptions = <TData = Awaited<ReturnType<typeof listSiteSections>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteSections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSiteSectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSiteSections>>> = ({ signal }) => listSiteSections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSiteSections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSiteSectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSiteSections>>>
+export type ListSiteSectionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all editable site sections
+ */
+
+export function useListSiteSections<TData = Awaited<ReturnType<typeof listSiteSections>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteSections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSiteSectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getListAdminBrandsUrl = () => {
 
 
@@ -3667,5 +3829,661 @@ export const useDeletePost = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeletePostMutationOptions(options));
+    }
+
+export const getListAdminSlidersUrl = () => {
+
+
+
+
+  return `/api/admin/sliders`
+}
+
+/**
+ * @summary List all sliders for the admin panel
+ */
+export const listAdminSliders = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminSlider[]> => {
+
+  return customFetch<AdminSlider[]>(getListAdminSlidersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminSlidersQueryKey = () => {
+    return [
+    `/api/admin/sliders`
+    ] as const;
+    }
+
+
+export const getListAdminSlidersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSliders>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminSliders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminSlidersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSliders>>> = ({ signal }) => listAdminSliders({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSliders>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAdminSlidersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSliders>>>
+export type ListAdminSlidersQueryError = ErrorType<void>
+
+
+/**
+ * @summary List all sliders for the admin panel
+ */
+
+export function useListAdminSliders<TData = Awaited<ReturnType<typeof listAdminSliders>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminSliders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAdminSlidersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSliderUrl = () => {
+
+
+
+
+  return `/api/admin/sliders`
+}
+
+/**
+ * @summary Create a slider
+ */
+export const createSlider = async (sliderInput: SliderInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminSlider> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminSlider>(getCreateSliderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(sliderInput)
+  }
+);}
+
+
+
+
+
+export const getCreateSliderMutationKey = () => ['createSlider'] as const;
+
+export const getCreateSliderMutationOptions = <TError = ErrorType<Error | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSlider>>, TError,CreateSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSlider>>, TError,CreateSliderMutationVariables, TContext> => {
+
+const mutationKey = getCreateSliderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSlider>>, CreateSliderMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSlider(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSliderMutationResult = NonNullable<Awaited<ReturnType<typeof createSlider>>>
+    export type CreateSliderMutationBody = BodyType<SliderInput>
+    export type CreateSliderMutationError = ErrorType<Error | void>
+    export type CreateSliderMutationVariables = {data: BodyType<SliderInput>}
+
+    /**
+ * @summary Create a slider
+ */
+export const useCreateSlider = <TError = ErrorType<Error | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSlider>>, TError,CreateSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSlider>>,
+        TError,
+        CreateSliderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateSliderMutationOptions(options));
+    }
+
+export const getUpdateSliderUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/sliders/${id}`
+}
+
+/**
+ * @summary Update a slider
+ */
+export const updateSlider = async (id: number,
+    sliderUpdate: SliderUpdate, options?: Parameters<typeof customFetch>[1]): Promise<AdminSlider> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminSlider>(getUpdateSliderUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(sliderUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateSliderMutationKey = () => ['updateSlider'] as const;
+
+export const getUpdateSliderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSlider>>, TError,UpdateSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSlider>>, TError,UpdateSliderMutationVariables, TContext> => {
+
+const mutationKey = getUpdateSliderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSlider>>, UpdateSliderMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSlider(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSliderMutationResult = NonNullable<Awaited<ReturnType<typeof updateSlider>>>
+    export type UpdateSliderMutationBody = BodyType<SliderUpdate>
+    export type UpdateSliderMutationError = ErrorType<void>
+    export type UpdateSliderMutationVariables = {id: number;data: BodyType<SliderUpdate>}
+
+    /**
+ * @summary Update a slider
+ */
+export const useUpdateSlider = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSlider>>, TError,UpdateSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSlider>>,
+        TError,
+        UpdateSliderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateSliderMutationOptions(options));
+    }
+
+export const getDeleteSliderUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/sliders/${id}`
+}
+
+/**
+ * @summary Delete a slider
+ */
+export const deleteSlider = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteSliderUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSliderMutationKey = () => ['deleteSlider'] as const;
+
+export const getDeleteSliderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSlider>>, TError,DeleteSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSlider>>, TError,DeleteSliderMutationVariables, TContext> => {
+
+const mutationKey = getDeleteSliderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSlider>>, DeleteSliderMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSlider(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSliderMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSlider>>>
+
+    export type DeleteSliderMutationError = ErrorType<void>
+    export type DeleteSliderMutationVariables = {id: number}
+
+    /**
+ * @summary Delete a slider
+ */
+export const useDeleteSlider = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSlider>>, TError,DeleteSliderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSlider>>,
+        TError,
+        DeleteSliderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteSliderMutationOptions(options));
+    }
+
+export const getListAdminSiteSectionsUrl = () => {
+
+
+
+
+  return `/api/admin/site-sections`
+}
+
+/**
+ * @summary List all site sections for the admin panel
+ */
+export const listAdminSiteSections = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSection[]> => {
+
+  return customFetch<AdminSiteSection[]>(getListAdminSiteSectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminSiteSectionsQueryKey = () => {
+    return [
+    `/api/admin/site-sections`
+    ] as const;
+    }
+
+
+export const getListAdminSiteSectionsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSiteSections>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminSiteSections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminSiteSectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSiteSections>>> = ({ signal }) => listAdminSiteSections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSiteSections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAdminSiteSectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSiteSections>>>
+export type ListAdminSiteSectionsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List all site sections for the admin panel
+ */
+
+export function useListAdminSiteSections<TData = Awaited<ReturnType<typeof listAdminSiteSections>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAdminSiteSections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAdminSiteSectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSiteSectionUrl = () => {
+
+
+
+
+  return `/api/admin/site-sections`
+}
+
+/**
+ * @summary Create a site section
+ */
+export const createSiteSection = async (siteSectionInput: SiteSectionInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSection> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminSiteSection>(getCreateSiteSectionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(siteSectionInput)
+  }
+);}
+
+
+
+
+
+export const getCreateSiteSectionMutationKey = () => ['createSiteSection'] as const;
+
+export const getCreateSiteSectionMutationOptions = <TError = ErrorType<Error | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSiteSection>>, TError,CreateSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSiteSection>>, TError,CreateSiteSectionMutationVariables, TContext> => {
+
+const mutationKey = getCreateSiteSectionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSiteSection>>, CreateSiteSectionMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSiteSection(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSiteSectionMutationResult = NonNullable<Awaited<ReturnType<typeof createSiteSection>>>
+    export type CreateSiteSectionMutationBody = BodyType<SiteSectionInput>
+    export type CreateSiteSectionMutationError = ErrorType<Error | void>
+    export type CreateSiteSectionMutationVariables = {data: BodyType<SiteSectionInput>}
+
+    /**
+ * @summary Create a site section
+ */
+export const useCreateSiteSection = <TError = ErrorType<Error | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSiteSection>>, TError,CreateSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSiteSection>>,
+        TError,
+        CreateSiteSectionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateSiteSectionMutationOptions(options));
+    }
+
+export const getUpdateSiteSectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/site-sections/${id}`
+}
+
+/**
+ * @summary Update a site section
+ */
+export const updateSiteSection = async (id: number,
+    siteSectionUpdate: SiteSectionUpdate, options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSection> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminSiteSection>(getUpdateSiteSectionUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(siteSectionUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateSiteSectionMutationKey = () => ['updateSiteSection'] as const;
+
+export const getUpdateSiteSectionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSiteSection>>, TError,UpdateSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSiteSection>>, TError,UpdateSiteSectionMutationVariables, TContext> => {
+
+const mutationKey = getUpdateSiteSectionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSiteSection>>, UpdateSiteSectionMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSiteSection(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSiteSectionMutationResult = NonNullable<Awaited<ReturnType<typeof updateSiteSection>>>
+    export type UpdateSiteSectionMutationBody = BodyType<SiteSectionUpdate>
+    export type UpdateSiteSectionMutationError = ErrorType<void>
+    export type UpdateSiteSectionMutationVariables = {id: number;data: BodyType<SiteSectionUpdate>}
+
+    /**
+ * @summary Update a site section
+ */
+export const useUpdateSiteSection = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSiteSection>>, TError,UpdateSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSiteSection>>,
+        TError,
+        UpdateSiteSectionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateSiteSectionMutationOptions(options));
+    }
+
+export const getDeleteSiteSectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/site-sections/${id}`
+}
+
+/**
+ * @summary Delete a site section
+ */
+export const deleteSiteSection = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteSiteSectionUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSiteSectionMutationKey = () => ['deleteSiteSection'] as const;
+
+export const getDeleteSiteSectionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSiteSection>>, TError,DeleteSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSiteSection>>, TError,DeleteSiteSectionMutationVariables, TContext> => {
+
+const mutationKey = getDeleteSiteSectionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSiteSection>>, DeleteSiteSectionMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSiteSection(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSiteSectionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSiteSection>>>
+
+    export type DeleteSiteSectionMutationError = ErrorType<void>
+    export type DeleteSiteSectionMutationVariables = {id: number}
+
+    /**
+ * @summary Delete a site section
+ */
+export const useDeleteSiteSection = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSiteSection>>, TError,DeleteSiteSectionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSiteSection>>,
+        TError,
+        DeleteSiteSectionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteSiteSectionMutationOptions(options));
     }
 
