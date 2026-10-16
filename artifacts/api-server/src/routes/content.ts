@@ -145,6 +145,19 @@ const PUBLIC_SETTING_KEYS = [
   "theme_background",
   "theme_foreground",
   "theme_accent",
+  "contact_phone",
+  "contact_email",
+  "contact_address",
+  "contact_working_hours",
+  "contact_whatsapp",
+  "contact_map_query",
+  "social_instagram",
+  "social_facebook",
+  "social_linkedin",
+  "social_youtube",
+  "b2b_url",
+  "b2b_label",
+  "footer_tagline",
 ] as const;
 
 router.get("/settings/public", async (_req, res): Promise<void> => {

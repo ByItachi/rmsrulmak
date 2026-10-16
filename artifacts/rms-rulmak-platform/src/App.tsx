@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { useCreateContactMessage, useCreateProductRequest, useGetCurrentAuthUser, useGetDashboardSummary, useGetProduct, useGetPublicPage, useListBrands, useListCategories, useListProducts, useListSliders, useListSiteSections } from '@workspace/api-client-react';
 import { AdminContent } from '@/pages/admin-content';
 import type { Brand, Category, Product, ProductListItem, Sector } from '@workspace/api-client-react';
@@ -25,6 +25,17 @@ const queryClient = new QueryClient();
 const redLogo = '/brand/rulmak-red.png';
 const whiteLogo = '/brand/rulmak-white.png';
 const redIcon = '/brand/rulmak-icon-red.png';
+
+function usePublicSettings() {
+  return useQuery({
+    queryKey: ['public-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/public');
+      return (await res.json()) as Record<string, string>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 function Logo({ dark = false, compact = false, className }: { dark?: boolean; compact?: boolean; className?: string }) {
   const fallback = compact ? 'h-12 w-12 object-contain' : 'h-14 w-auto max-w-[230px] object-contain sm:h-16 sm:max-w-[260px]';
@@ -75,6 +86,9 @@ function NavDropdown({ label, href, items, active }: { label: string; href: stri
 function Header() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
+  const { data: s } = usePublicSettings();
+  const b2bUrl = s?.b2b_url || 'https://www.b2brulmak.com/';
+  const b2bLabel = s?.b2b_label || 'B2B Giriş';
 
   useEffect(() => {
     setOpen(false);
@@ -100,12 +114,12 @@ function Header() {
       </nav>
       <div className="hidden shrink-0 lg:block">
         <div className="group relative">
-          <a href="https://www.b2brulmak.com/" target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login" className="flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25">
-            <Users size={15} /> B2B Giriş
+          <a href={b2bUrl} target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login" className="flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25">
+            <Users size={15} /> {b2bLabel}
           </a>
           <div className="invisible absolute right-0 top-full z-50 mt-2 w-56 translate-y-1 rounded-lg border border-border bg-card p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-            <a href="https://www.b2brulmak.com/" target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login-menu" className="block rounded-md px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary">Bayi / Müşteri Girişi</a>
-            <a href="https://www.b2brulmak.com/" target="_blank" rel="noopener noreferrer" data-testid="link-b2b-register-menu" className="block rounded-md px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary">Yeni Hesap Oluştur</a>
+            <a href={b2bUrl} target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login-menu" className="block rounded-md px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary">Bayi / Müşteri Girişi</a>
+            <a href={b2bUrl} target="_blank" rel="noopener noreferrer" data-testid="link-b2b-register-menu" className="block rounded-md px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary">Yeni Hesap Oluştur</a>
           </div>
         </div>
       </div>
@@ -124,7 +138,7 @@ function Header() {
         {navItems.slice(2).map(([href, label]) => <Link key={href} href={href} onClick={() => setOpen(false)} data-testid={`link-nav-${label}`} className={`rounded-lg px-4 py-3 text-base font-semibold transition-colors hover:bg-muted hover:text-primary ${location === href ? 'bg-muted text-primary' : 'text-foreground'}`}>{label}</Link>)}
       </nav>
       <div className="shrink-0 space-y-2 border-t border-border p-4">
-        <a href="https://www.b2brulmak.com/" target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login-mobile" className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"><Users size={15} /> B2B Giriş</a>
+        <a href={b2bUrl} target="_blank" rel="noopener noreferrer" data-testid="link-b2b-login-mobile" className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"><Users size={15} /> {b2bLabel}</a>
         <Link href="/iletisim" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-md border border-border px-4 py-3 text-sm font-bold text-foreground">Bize Ulaşın <ArrowRight size={15} /></Link>
       </div>
     </aside>
@@ -132,14 +146,25 @@ function Header() {
 }
 
 function Footer() {
+  const { data: s } = usePublicSettings();
+  const tagline = s?.footer_tagline || 'Rulman ve güç aktarım sistemlerinde endüstriyel güven ve ölçülebilir performans.';
+  const socials = [
+    { label: 'Instagram', href: s?.social_instagram || 'https://www.instagram.com/', Icon: Instagram },
+    { label: 'Facebook', href: s?.social_facebook || 'https://www.facebook.com/', Icon: Facebook },
+    { label: 'LinkedIn', href: s?.social_linkedin || 'https://www.linkedin.com/company/', Icon: Linkedin },
+    { label: 'YouTube', href: s?.social_youtube || 'https://www.youtube.com/', Icon: Youtube },
+  ];
+  const phone = s?.contact_phone || '+90 216 392 41 41';
+  const email = s?.contact_email || 'info@rmsrulmak.com';
+  const address = s?.contact_address || 'Şifa Mah. Şekerpınar Cad. No: 11 4/B, Tuzla / İstanbul';
   return <footer className="bg-sidebar text-sidebar-foreground">
     <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-[1.2fr_.8fr_.8fr_1fr] lg:px-8">
-      <div><Logo dark /><p className="mt-6 max-w-xs text-sm leading-6 text-sidebar-foreground/55">Rulman ve güç aktarım sistemlerinde endüstriyel güven ve ölçülebilir performans.</p><div className="mt-6 flex gap-3">{[{ label: 'Instagram', href: 'https://www.instagram.com/', Icon: Instagram }, { label: 'Facebook', href: 'https://www.facebook.com/', Icon: Facebook }, { label: 'LinkedIn', href: 'https://www.linkedin.com/company/', Icon: Linkedin }, { label: 'YouTube', href: 'https://www.youtube.com/', Icon: Youtube }].map(({ label, href, Icon }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} data-testid={`link-social-${label.toLowerCase()}`} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-sidebar-foreground/70 transition hover:border-primary hover:bg-primary hover:text-white"><Icon size={17} /></a>)}</div></div>
+      <div><Logo dark /><p className="mt-6 max-w-xs text-sm leading-6 text-sidebar-foreground/55">{tagline}</p><div className="mt-6 flex gap-3">{socials.map(({ label, href, Icon }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} data-testid={`link-social-${label.toLowerCase()}`} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-sidebar-foreground/70 transition hover:border-primary hover:bg-primary hover:text-white"><Icon size={17} /></a>)}</div></div>
       <div><p className="font-display text-lg font-bold text-white">Keşfet</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70">{navItems.slice(0, 4).map(([href, label]) => <Link key={href} href={href} data-testid={`link-footer-${label}`} className="transition-colors hover:text-white">{label}</Link>)}</div></div>
       <div><p className="font-display text-lg font-bold text-white">Kurumsal</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70"><Link href="/kurumsal">Hakkımızda</Link><Link href="/distributorler" data-testid="link-footer-distributors">Distribütörlüklerimiz</Link><Link href="/bizden-haberler" data-testid="link-footer-news">Bizden Haberler</Link><Link href="/kataloglar" data-testid="link-footer-e-katalog">E-Katalog</Link><Link href="/teknik-dokumanlar">PDF Arşivi</Link><Link href="/iletisim" data-testid="link-footer-support">Teknik destek</Link></div></div>
-      <div><p className="font-display text-lg font-bold text-white">Bize ulaşın</p><div className="mt-4 space-y-3 text-sm text-sidebar-foreground/70"><a className="flex gap-2 hover:text-white" href="tel:+902163924141"><Phone size={15} className="mt-0.5 text-red-400" /> +90 216 392 41 41</a><a className="flex gap-2 hover:text-white" href="mailto:info@rmsrulmak.com"><Mail size={15} className="mt-0.5 text-red-400" /> info@rmsrulmak.com</a><p className="flex gap-2"><MapPin size={15} className="mt-0.5 text-red-400" /> Şifa Mah. Şekerpınar Cad. No: 11 4/B, Tuzla / İstanbul</p></div></div>
+      <div><p className="font-display text-lg font-bold text-white">Bize ulaşın</p><div className="mt-4 space-y-3 text-sm text-sidebar-foreground/70"><a className="flex gap-2 hover:text-white" href={'tel:' + phone.replace(/[^+\d]/g, '')}><Phone size={15} className="mt-0.5 text-red-400" /> {phone}</a><a className="flex gap-2 hover:text-white" href={'mailto:' + email}><Mail size={15} className="mt-0.5 text-red-400" /> {email}</a><p className="flex gap-2"><MapPin size={15} className="mt-0.5 text-red-400" /> {address}</p></div></div>
     </div>
-    <div className="border-t border-sidebar-border"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-5 py-5 text-xs text-sidebar-foreground/45 sm:flex-row sm:items-center lg:px-8"><span>© {new Date().getFullYear()} RMS Rulmak. Tüm hakları saklıdır.</span><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><Link href="/gizlilik-politikasi" data-testid="link-footer-privacy" className="transition-colors hover:text-white">Gizlilik Politikası</Link><Link href="/kullanim-kosullari" data-testid="link-footer-terms" className="transition-colors hover:text-white">Kullanım Koşulları</Link><Link href="/kvkk" data-testid="link-footer-kvkk" className="transition-colors hover:text-white">KVKK Aydınlatma Metni</Link><Link href="/cerez-politikasi" data-testid="link-footer-cookies" className="transition-colors hover:text-white">Çerez Politikası</Link></div></div></div>
+    <div className="border-t border-sidebar-border"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-5 py-5 text-xs text-sidebar-foreground/45 sm:flex-row sm:items-center lg:px-8"><span>© {new Date().getFullYear()} {s?.site_name || 'RMS Rulmak'}. Tüm hakları saklıdır.</span><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><Link href="/gizlilik-politikasi" data-testid="link-footer-privacy" className="transition-colors hover:text-white">Gizlilik Politikası</Link><Link href="/kullanim-kosullari" data-testid="link-footer-terms" className="transition-colors hover:text-white">Kullanım Koşulları</Link><Link href="/kvkk" data-testid="link-footer-kvkk" className="transition-colors hover:text-white">KVKK Aydınlatma Metni</Link><Link href="/cerez-politikasi" data-testid="link-footer-cookies" className="transition-colors hover:text-white">Çerez Politikası</Link></div></div></div>
   </footer>;
 }
 
@@ -208,10 +233,12 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 function FloatingActions() {
+  const { data: s } = usePublicSettings();
   const [open, setOpen] = useState(false);
   const goTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  const wa = s?.contact_whatsapp || '+90 501 062 40 41';
   const channels = [
-    { label: 'WhatsApp', href: 'https://wa.me/905010624041?text=' + encodeURIComponent('Merhaba, RMS Rulmak ürün ve çözümleri hakkında bilgi almak istiyorum. https://www.rmsrulmak.com'), iconCls: 'text-[#25D366] hover:bg-[#25D366] hover:text-white', Icon: MessageCircle, testid: 'link-float-whatsapp' },
+    { label: 'WhatsApp', href: 'https://wa.me/' + wa.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent('Merhaba, RMS Rulmak ürün ve çözümleri hakkında bilgi almak istiyorum. https://www.rmsrulmak.com'), iconCls: 'text-[#25D366] hover:bg-[#25D366] hover:text-white', Icon: MessageCircle, testid: 'link-float-whatsapp' },
     { label: 'Instagram', href: 'https://www.instagram.com/', iconCls: 'text-[#E4405F] hover:bg-[#E4405F] hover:text-white', Icon: Instagram, testid: 'link-float-instagram' },
     { label: 'Telefon', href: 'tel:+902163924141', iconCls: 'text-primary hover:bg-primary hover:text-white', Icon: Phone, testid: 'link-float-phone' },
   ] as const;
@@ -580,16 +607,25 @@ const contactMapEmbed = 'https://www.google.com/maps?q=' + encodeURIComponent('�
 const contactMapLink = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Şifa Mah. Şekerpınar Cad. No: 114/B Tuzla İstanbul');
 
 function Contact() {
+  const { data: s } = usePublicSettings();
   const mutation = useCreateContactMessage();
   const [success, setSuccess] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const fd = new FormData(event.currentTarget); mutation.mutate({ data: { fullName: String(fd.get('fullName')), company: String(fd.get('company') || ''), phone: String(fd.get('phone') || ''), email: String(fd.get('email')), subject: String(fd.get('subject')), message: String(fd.get('message')), kvkkAccepted: fd.get('kvkk') === 'on' } }, { onSuccess: () => { setSuccess(true); safeTrack('generate_lead', { form: 'iletisim', subject: String(fd.get('subject')) }); } }); };
+  const cPhone = s?.contact_phone || '+90 216 392 41 41';
+  const cEmail = s?.contact_email || 'info@rmsrulmak.com';
+  const cAddress = (s?.contact_address || 'Şifa Mah. Şekerpınar Cad. No: 114/B Tuzla / İstanbul').replace(/  +/g, ' ');
+  const cWhatsapp = s?.contact_whatsapp || '+90 501 062 40 41';
+  const hoursRaw = s?.contact_working_hours || 'Pazartesi - Cuma: 09:00 - 18:00, Cumartesi: 09:00 - 13:00, Pazar: Kapalı';
+  const contactMapQuery = (s?.contact_map_query || cAddress);
+  const mapLink = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(contactMapQuery);
+  const mapEmbed = 'https://www.google.com/maps?q=' + encodeURIComponent(contactMapQuery) + '&output=embed';
   const items = [
-    { label: 'Adres', lines: ['Şifa Mah. Şekerpınar Cad. No: 114/B', 'Tuzla / İstanbul'], href: contactMapLink, Icon: MapPin },
-    { label: 'Telefon', lines: ['+90 216 392 41 41'], href: 'tel:+902163924141', Icon: Phone },
-    { label: 'WhatsApp', lines: ['+90 501 062 40 41'], href: 'https://wa.me/905010624041', Icon: MessageCircle },
-    { label: 'E-posta', lines: ['info@rmsrulmak.com'], href: 'mailto:info@rmsrulmak.com', Icon: Mail },
+    { label: 'Adres', lines: cAddress.split(','), href: mapLink, Icon: MapPin },
+    { label: 'Telefon', lines: [cPhone], href: 'tel:' + cPhone.replace(/[^+\d]/g, ''), Icon: Phone },
+    { label: 'WhatsApp', lines: [cWhatsapp], href: 'https://wa.me/' + cWhatsapp.replace(/[^0-9]/g, ''), Icon: MessageCircle },
+    { label: 'E-posta', lines: [cEmail], href: 'mailto:' + cEmail, Icon: Mail },
   ] as const;
-  return <Shell><PageIntro eyebrow="İletişim" title="Sorularınız için bizimle iletişime geçin" description="Ürün, teknik seçim, tedarik veya B2B üyelik konularında ekibimiz size geri dönsün." /><main className="mx-auto grid max-w-7xl gap-12 px-5 py-12 lg:grid-cols-[.72fr_1.28fr] lg:px-8 lg:py-16"><div><div className="space-y-7">{items.map(({ label, lines, href, Icon }) => <a key={label} href={href ?? contactMapLink} target={href === contactMapLink ? '_blank' : undefined} rel="noopener noreferrer" data-testid={`link-contact-${label.toLowerCase()}`} className="group flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-primary transition-colors group-hover:bg-primary group-hover:text-white"><Icon size={18} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-semibold">{lines[0]}</p>{lines[1] && <p className="font-semibold">{lines[1]}</p>}</div></a>)}</div><div className="mt-12 border-t border-border pt-8"><p className="eyebrow">Çalışma Saatleri</p><p className="mt-3 text-sm leading-7 text-muted-foreground">Pazartesi - Cuma: 09:00 - 18:00<br />Cumartesi: 09:00 - 13:00<br />Pazar: Kapalı</p></div></div><div className="rounded-xl border border-border bg-card p-6 md:p-8">{success ? <div data-testid="status-contact-success" className="flex min-h-[390px] flex-col items-center justify-center text-center"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700"><Check /></span><h2 className="mt-5 font-display text-3xl font-semibold">Mesajınız ulaştı.</h2><p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">Ekibimiz talebinizi inceleyip en kısa sürede sizinle iletişime geçecek.</p><button data-testid="button-new-contact" onClick={() => setSuccess(false)} className="mt-7 text-sm font-bold text-primary">Yeni mesaj gönder</button></div> : <form onSubmit={submit} className="space-y-4"><p className="eyebrow">Bize Ulaşın</p><div className="grid gap-4 sm:grid-cols-2"><input required name="fullName" data-testid="input-contact-name" placeholder="Ad Soyad *" className="field" /><input name="company" data-testid="input-contact-company" placeholder="Firma" className="field" /><input required type="email" name="email" data-testid="input-contact-email" placeholder="E-posta *" className="field" /><input name="phone" data-testid="input-contact-phone" placeholder="Telefon" className="field" /></div><input required name="subject" data-testid="input-contact-subject" placeholder="Konu *" className="field" /><textarea required minLength={10} name="message" data-testid="input-contact-message" placeholder="Mesajınız *" className="field min-h-36 resize-y" /><label className="flex items-start gap-2 text-xs text-muted-foreground"><input required type="checkbox" name="kvkk" data-testid="input-contact-kvkk" className="mt-0.5 accent-primary" /> KVKK kapsamında kişisel verilerimin işlenmesini kabul ediyorum.</label>{mutation.isError && <p data-testid="status-contact-error" className="text-sm text-red-600">Mesaj gönderilemedi. Lütfen tekrar deneyin.</p>}<button disabled={mutation.isPending} data-testid="button-submit-contact" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">{mutation.isPending && <Loader2 size={16} className="animate-spin" />} Mesajı gönder</button></form>}</div></main><section data-testid="section-contact-map" className="border-t border-border"><div className="mx-auto max-w-7xl px-5 py-12 lg:px-8"><div className="mb-6 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-primary"><MapPin size={18} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Konumumuz</p><h2 className="font-display text-xl font-semibold">{contactAddress}</h2></div></div><iframe title="RMS Rulmak konum — Google Haritalar" src={contactMapEmbed} loading="lazy" className="h-[320px] w-full rounded-xl border border-border md:h-[420px]" style={{ border: 0 }} allowFullScreen referrerPolicy="no-referrer-when-downgrade" /></div></section></Shell>;
+  return <Shell><PageIntro eyebrow="İletişim" title="Sorularınız için bizimle iletişime geçin" description="Ürün, teknik seçim, tedarik veya B2B üyelik konularında ekibimiz size geri dönsün." /><main className="mx-auto grid max-w-7xl gap-12 px-5 py-12 lg:grid-cols-[.72fr_1.28fr] lg:px-8 lg:py-16"><div><div className="space-y-7">{items.map(({ label, lines, href, Icon }) => <a key={label} href={href ?? mapLink} target={href === mapLink ? '_blank' : undefined} rel="noopener noreferrer" data-testid={`link-contact-${label.toLowerCase()}`} className="group flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-primary transition-colors group-hover:bg-primary group-hover:text-white"><Icon size={18} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-semibold">{lines[0]}</p>{lines[1] && <p className="font-semibold">{lines[1]}</p>}</div></a>)}</div><div className="mt-12 border-t border-border pt-8"><p className="eyebrow">Çalışma Saatleri</p><p className="mt-3 text-sm leading-7 text-muted-foreground">{hoursRaw.split(',').map((h) => <span key={h} className="block">{h.trim()}</span>)}</p></div></div><div className="rounded-xl border border-border bg-card p-6 md:p-8">{success ? <div data-testid="status-contact-success" className="flex min-h-[390px] flex-col items-center justify-center text-center"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700"><Check /></span><h2 className="mt-5 font-display text-3xl font-semibold">Mesajınız ulaştı.</h2><p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">Ekibimiz talebinizi inceleyip en kısa sürede sizinle iletişime geçecek.</p><button data-testid="button-new-contact" onClick={() => setSuccess(false)} className="mt-7 text-sm font-bold text-primary">Yeni mesaj gönder</button></div> : <form onSubmit={submit} className="space-y-4"><p className="eyebrow">Bize Ulaşın</p><div className="grid gap-4 sm:grid-cols-2"><input required name="fullName" data-testid="input-contact-name" placeholder="Ad Soyad *" className="field" /><input name="company" data-testid="input-contact-company" placeholder="Firma" className="field" /><input required type="email" name="email" data-testid="input-contact-email" placeholder="E-posta *" className="field" /><input name="phone" data-testid="input-contact-phone" placeholder="Telefon" className="field" /></div><input required name="subject" data-testid="input-contact-subject" placeholder="Konu *" className="field" /><textarea required minLength={10} name="message" data-testid="input-contact-message" placeholder="Mesajınız *" className="field min-h-36 resize-y" /><label className="flex items-start gap-2 text-xs text-muted-foreground"><input required type="checkbox" name="kvkk" data-testid="input-contact-kvkk" className="mt-0.5 accent-primary" /> KVKK kapsamında kişisel verilerimin işlenmesini kabul ediyorum.</label>{mutation.isError && <p data-testid="status-contact-error" className="text-sm text-red-600">Mesaj gönderilemedi. Lütfen tekrar deneyin.</p>}<button disabled={mutation.isPending} data-testid="button-submit-contact" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">{mutation.isPending && <Loader2 size={16} className="animate-spin" />} Mesajı gönder</button></form>}</div></main><section data-testid="section-contact-map" className="border-t border-border"><div className="mx-auto max-w-7xl px-5 py-12 lg:px-8"><div className="mb-6 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-primary"><MapPin size={18} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Konumumuz</p><h2 className="font-display text-xl font-semibold">{cAddress}</h2></div></div><iframe title="RMS Rulmak konum — Google Haritalar" src={mapEmbed} loading="lazy" className="h-[320px] w-full rounded-xl border border-border md:h-[420px]" style={{ border: 0 }} allowFullScreen referrerPolicy="no-referrer-when-downgrade" /></div></section></Shell>;
 }
 
 function Auth({ register = false }: { register?: boolean }) {
