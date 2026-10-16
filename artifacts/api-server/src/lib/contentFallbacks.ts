@@ -121,10 +121,22 @@ export function slugify(value: string): string {
 }
 
 export function isUniqueViolation(error: unknown): boolean {
-  return (
+  if (
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
     (error as { code?: string }).code === "23505"
-  );
+  ) {
+    return true;
+  }
+  // Drizzle/pg hataları bazen altta sarılıdır (ör. { cause: { code } }).
+  const cause =
+    typeof (error as { cause?: unknown })?.cause === "object"
+      ? ((error as { cause?: unknown }).cause as { code?: string })
+      : undefined;
+  if (cause?.code === "23505") return true;
+  // Bazı sürücü sarmalayıcıları kodu mesaja gömebilir.
+  const message =
+    error instanceof Error ? error.message : error != null ? String(error) : "";
+  return message.includes("23505") || /duplicate key/i.test(message);
 }

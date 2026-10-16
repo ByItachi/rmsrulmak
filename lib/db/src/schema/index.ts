@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./catalogs";
 export * from "./content";
+export * from "./cms";
 
 import { createInsertSchema } from "drizzle-zod";
 import {

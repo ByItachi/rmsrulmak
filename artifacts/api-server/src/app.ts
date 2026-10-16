@@ -8,6 +8,7 @@ import { authMiddleware } from "./middlewares/authMiddleware";
 import { auditLog } from "./middlewares/auditLog";
 import { securityHeaders } from "./middlewares/securityHeaders";
 import { rateLimit } from "./middlewares/rateLimit";
+import { redirectMiddleware } from "./middlewares/redirectRules";
 
 function allowedOrigins(): string[] {
   const raw = process.env["CORS_ORIGINS"];
@@ -70,6 +71,8 @@ app.use(express.json({ limit: "256kb" }));
 app.use(express.urlencoded({ extended: true, limit: "256kb" }));
 app.use(authMiddleware);
 app.use(auditLog);
+
+app.use(redirectMiddleware);
 
 app.use("/api", router);
 

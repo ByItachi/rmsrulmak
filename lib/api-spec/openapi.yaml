@@ -1214,6 +1214,312 @@ paths:
           description: Sign-in required
         "403":
           description: Manager access required
+  /pages/{slug}:
+    get:
+      operationId: getPublicPage
+      tags: [content-admin]
+      summary: Get a published page by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Published page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicPage"
+        "404":
+          description: Page not found or not published
+  /admin/media:
+    get:
+      operationId: listAdminMediaAssets
+      tags: [content-admin]
+      summary: List uploaded media assets
+      responses:
+        "200":
+          description: Media assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminMediaAsset"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    post:
+      operationId: createAdminMediaAsset
+      tags: [content-admin]
+      summary: Upload a media asset (base64 encoded file)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMediaAssetBody"
+      responses:
+        "201":
+          description: Created media asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMediaAsset"
+        "400":
+          description: Invalid or unsupported file
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/media/{id}:
+    patch:
+      operationId: updateAdminMediaAsset
+      tags: [content-admin]
+      summary: Update a media asset's metadata
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMediaAssetBody"
+      responses:
+        "200":
+          description: Updated media asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMediaAsset"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    delete:
+      operationId: deleteAdminMediaAsset
+      tags: [content-admin]
+      summary: Delete a media asset (record and file)
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/pages:
+    get:
+      operationId: listAdminPages
+      tags: [content-admin]
+      summary: List site pages
+      responses:
+        "200":
+          description: Site pages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminPage"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    post:
+      operationId: createAdminPage
+      tags: [content-admin]
+      summary: Create a site page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePageBody"
+      responses:
+        "201":
+          description: Created page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPage"
+        "409":
+          description: Slug already in use
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/pages/{id}:
+    patch:
+      operationId: updateAdminPage
+      tags: [content-admin]
+      summary: Update a site page
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePageBody"
+      responses:
+        "200":
+          description: Updated page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPage"
+        "409":
+          description: Slug already in use
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    delete:
+      operationId: deleteAdminPage
+      tags: [content-admin]
+      summary: Delete a site page
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/redirects:
+    get:
+      operationId: listAdminRedirectRules
+      tags: [content-admin]
+      summary: List redirect rules
+      responses:
+        "200":
+          description: Redirect rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminRedirectRule"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    post:
+      operationId: createAdminRedirectRule
+      tags: [content-admin]
+      summary: Create a redirect rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRedirectRuleBody"
+      responses:
+        "201":
+          description: Created redirect rule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRedirectRule"
+        "409":
+          description: From path already in use
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/redirects/{id}:
+    patch:
+      operationId: updateAdminRedirectRule
+      tags: [content-admin]
+      summary: Update a redirect rule
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRedirectRuleBody"
+      responses:
+        "200":
+          description: Updated redirect rule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRedirectRule"
+        "409":
+          description: From path already in use
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+    delete:
+      operationId: deleteAdminRedirectRule
+      tags: [content-admin]
+      summary: Delete a redirect rule
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [content-admin]
+      summary: List platform users
+      responses:
+        "200":
+          description: Platform users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
+  /admin/users/{id}:
+    patch:
+      operationId: updateAdminUser
+      tags: [content-admin]
+      summary: Update a user's role or active status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Sign-in required
+        "403":
+          description: Manager access required
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -2406,3 +2712,313 @@ components:
         body:
           type: string
           maxLength: 20000
+    PublicPage:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        template:
+          type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - slug
+        - title
+        - content
+        - template
+        - updatedAt
+    AdminPage:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        template:
+          type: string
+        published:
+          type: boolean
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+        - published
+        - createdAt
+        - updatedAt
+    CreatePageBody:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 160
+        title:
+          type: string
+          minLength: 2
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 30000
+        template:
+          type: string
+          maxLength: 40
+        published:
+          type: boolean
+        seoTitle:
+          type: string
+          maxLength: 160
+        seoDescription:
+          type: string
+          maxLength: 300
+        position:
+          type: integer
+      required:
+        - slug
+        - title
+        - content
+    UpdatePageBody:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 160
+        title:
+          type: string
+          minLength: 2
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 30000
+        template:
+          type: string
+          maxLength: 40
+        published:
+          type: boolean
+        seoTitle:
+          type: string
+          maxLength: 160
+        seoDescription:
+          type: string
+          maxLength: 300
+        position:
+          type: integer
+      required:
+        - title
+        - content
+    AdminMediaAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        storagePath:
+          type: string
+        fileName:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        altText:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        folder:
+          type: string
+        checksum:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - storagePath
+        - fileName
+        - mimeType
+        - size
+        - createdAt
+    CreateMediaAssetBody:
+      type: object
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        mimeType:
+          type: string
+          maxLength: 120
+        size:
+          type: integer
+        base64:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          maxLength: 200
+        altText:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+          maxLength: 500
+        folder:
+          type: string
+          maxLength: 80
+      required:
+        - fileName
+        - mimeType
+        - base64
+    UpdateMediaAssetBody:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        altText:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+          maxLength: 500
+        folder:
+          type: string
+          maxLength: 80
+      required:
+        - title
+    AdminRedirectRule:
+      type: object
+      properties:
+        id:
+          type: string
+        fromPath:
+          type: string
+        toPath:
+          type: string
+        statusCode:
+          type: integer
+        enabled:
+          type: boolean
+        position:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - fromPath
+        - toPath
+        - statusCode
+        - enabled
+        - createdAt
+    CreateRedirectRuleBody:
+      type: object
+      properties:
+        fromPath:
+          type: string
+          minLength: 1
+          maxLength: 500
+        toPath:
+          type: string
+          minLength: 1
+          maxLength: 500
+        statusCode:
+          type: integer
+          enum: [301, 302]
+        enabled:
+          type: boolean
+        position:
+          type: integer
+      required:
+        - fromPath
+        - toPath
+    UpdateRedirectRuleBody:
+      type: object
+      properties:
+        fromPath:
+          type: string
+          minLength: 1
+          maxLength: 500
+        toPath:
+          type: string
+          minLength: 1
+          maxLength: 500
+        statusCode:
+          type: integer
+          enum: [301, 302]
+        enabled:
+          type: boolean
+        position:
+          type: integer
+      required:
+        - fromPath
+        - toPath
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, "null"]
+        firstName:
+          type: [string, "null"]
+        lastName:
+          type: [string, "null"]
+        profileImageUrl:
+          type: [string, "null"]
+        role:
+          type: string
+          enum: [super_admin, admin, editor, media_manager, viewer]
+        isActive:
+          type: boolean
+        lastLoginAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - role
+        - isActive
+        - createdAt
+    UpdateUserBody:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [super_admin, admin, editor, media_manager, viewer]
+        isActive:
+          type: boolean
+      required:
+        - role
+        - isActive

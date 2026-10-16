@@ -6,15 +6,19 @@ import {
   Check,
   CheckCheck,
   Cog,
+  ExternalLink,
   Factory,
   FileText,
+  FileUp,
   Gauge,
   Image as ImageIcon,
   Inbox,
   Layers3,
+  Link2,
   Loader2,
   Mail,
   PackageSearch,
+  Palette,
   Pencil,
   Plus,
   Save,
@@ -23,9 +27,14 @@ import {
   Settings2,
   ShieldCheck,
   Trash2,
+  Upload,
+  Users,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import {
+  useCreateAdminMediaAsset,
+  useCreateAdminPage,
+  useCreateAdminRedirectRule,
   useCreateBrand,
   useCreateCategory,
   useCreatePost,
@@ -33,6 +42,9 @@ import {
   useCreateSector,
   useCreateSiteSection,
   useCreateSlider,
+  useDeleteAdminMediaAsset,
+  useDeleteAdminPage,
+  useDeleteAdminRedirectRule,
   useDeleteBrand,
   useDeleteCategory,
   useDeletePost,
@@ -45,12 +57,20 @@ import {
   useListAdminBrands,
   useListAdminCategories,
   useListAdminContactMessages,
+  useListAdminMediaAssets,
+  useListAdminPages,
   useListAdminPosts,
   useListAdminProducts,
+  useListAdminRedirectRules,
   useListAdminSectors,
   useListAdminSiteSections,
   useListAdminSliders,
+  useListAdminUsers,
+  useUpdateAdminMediaAsset,
+  useUpdateAdminPage,
+  useUpdateAdminRedirectRule,
   useUpdateAdminSettings,
+  useUpdateAdminUser,
   useUpdateBrand,
   useUpdateCategory,
   useUpdateContactMessage,
@@ -60,7 +80,13 @@ import {
   useUpdateSiteSection,
   useUpdateSlider,
 } from "@workspace/api-client-react";
-import type { AdminSetting } from "@workspace/api-client-react";
+import type {
+  AdminMediaAsset,
+  AdminPage,
+  AdminRedirectRule,
+  AdminSetting,
+  AdminUser,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -357,6 +383,10 @@ export function AdminContent() {
   if (location.startsWith("/admin/products")) return <ProductsAdmin />;
   if (location.startsWith("/admin/inquiries")) return <InquiriesAdmin />;
   if (location.startsWith("/admin/settings")) return <SettingsAdmin />;
+  if (location.startsWith("/admin/media")) return <MediaLibraryAdmin />;
+  if (location.startsWith("/admin/pages")) return <PagesAdmin />;
+  if (location.startsWith("/admin/redirects")) return <RedirectsAdmin />;
+  if (location.startsWith("/admin/users")) return <UsersAdmin />;
   if (location.startsWith("/admin/audit")) return <AuditLogsAdmin />;
   return <AdminOverview />;
 }
@@ -455,10 +485,10 @@ function InquiriesAdmin() {
   </div>;
 }
 
-const SETTING_GROUPS = ["general", "smtp", "seo", "integrations"] as const;
-const GROUP_LABELS: Record<string, string> = { general: "Genel Ayarlar", smtp: "SMTP Ayarları", seo: "SEO & Google Search Console", integrations: "Google & Meta Entegrasyonları" };
-const GROUP_ICONS: Record<string, typeof Gauge> = { general: Settings2, smtp: Mail, seo: Search, integrations: Send };
-const GROUP_DESCRIPTIONS: Record<string, string> = { general: "Site kimliği ve iletişim bilgileri.", smtp: "E-posta gönderimi için SMTP sunucu ayarları.", seo: "Arama motoru doğrulama ve meta bilgileri.", integrations: "GA4, GTM, Meta Pixel ve Search Console yapılandırması. Bu değerler siteye izin koşullarıyla birlikte uygulanır." };
+const SETTING_GROUPS = ["general", "smtp", "seo", "integrations", "theme"] as const;
+const GROUP_LABELS: Record<string, string> = { general: "Genel Ayarlar", smtp: "SMTP Ayarları", seo: "SEO & Google Search Console", integrations: "Google & Meta Entegrasyonları", theme: "Tema ve Renkler" };
+const GROUP_ICONS: Record<string, typeof Gauge> = { general: Settings2, smtp: Mail, seo: Search, integrations: Send, theme: Palette };
+const GROUP_DESCRIPTIONS: Record<string, string> = { general: "Site kimliği ve iletişim bilgileri.", smtp: "E-posta gönderimi için SMTP sunucu ayarları.", seo: "Arama motoru doğrulama ve meta bilgileri.", integrations: "GA4, GTM, Meta Pixel ve Search Console yapılandırması. Bu değerler siteye izin koşullarıyla birlikte uygulanır.", theme: "Sitenin ana, arka plan ve metin renklerini yönetin. Değişiklikler kaydedildikten sonra ziyaretçiler için anında geçerli olur." };
 
 function SettingsAdmin() {
   const list = useGetAdminSettings();
@@ -630,5 +660,283 @@ function ProductsAdmin() {
         {list.data?.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Henüz ürün yok.</p>}
       </div>
     </Section>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// Media library
+// ---------------------------------------------------------------------------
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result ?? "");
+      const comma = result.indexOf(",");
+      resolve(comma !== -
+          1 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(new Error("Dosya okunamadı."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function MediaLibraryAdmin() {
+  const list = useListAdminMediaAssets();
+  const create = useCreateAdminMediaAsset();
+  const update = useUpdateAdminMediaAsset();
+  const del = useDeleteAdminMediaAsset();
+  const qc = useQueryClient();
+  const [folderFilter, setFolderFilter] = useState("all");
+  const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editAlt, setEditAlt] = useState("");
+  const [editFolder, setEditFolder] = useState("genel");
+
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ["/admin/media"] }); };
+  const assets = list.data ?? [];
+  const folders = Array.from(new Set(assets.map((a) => a.folder ?? "genel")));
+  const filtered = folderFilter === "all" ? assets : assets.filter((a) => (a.folder ?? "genel") === folderFilter);
+
+  const onUpload = async (e: FormEvent) => {
+    e.preventDefault();
+    const input = e.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
+    const files = input?.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const base64 = await fileToBase64(file);
+        await create.mutateAsync({ data: { fileName: file.name, mimeType: file.type || "application/octet-stream", base64, folder: folderFilter === "all" ? "genel" : folderFilter } });
+      }
+      if (input) input.value = "";
+      invalidate();
+    } catch (err) {
+      window.alert("Yükleme başarısız: " + String((err as Error)?.message ?? "Bilinmeyen hata"));
+      void err;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const startEdit = (a: AdminMediaAsset) => { setEditingId(a.id); setEditTitle(a.title ?? ""); setEditAlt(a.altText ?? ""); setEditFolder(a.folder ?? "genel"); };
+  const saveEdit = async () => {
+    if (!editingId) return;
+    await update.mutate({ id: Number(editingId), data: { title: editTitle || " ", altText: editAlt, folder: editFolder } }, { onSuccess: () => { setEditingId(null); invalidate(); } });
+  };
+
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="eyebrow">Dosyalar</p><h2 className="mt-2 font-display text-2xl font-semibold">Medya kütüphanesi</h2><p className="mt-1 text-sm text-muted-foreground">Görseller ve PDF'ler; ana sayfa, katalog ve içeriklerde kullanılmak üzere buradan yönetilir. Dosyalar otomatik olarak <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">/api/media/&lt;dosya&gt;</code> adresinde yayınlanır.</p></div>
+      <div className="flex flex-wrap gap-2">
+        {(["all", ...folders]).map((f) => <button key={f} type="button" data-testid={`folder-${f}`} onClick={() => setFolderFilter(f)} className={`rounded-full px-4 py-2 text-xs font-bold ${folderFilter === f ? "bg-primary text-white" : "border border-border bg-card text-muted-foreground hover:border-primary/40"}`}>{f === "all" ? "Tümü" : f}</button>)}
+      </div>
+    </div>
+    <form onSubmit={onUpload} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 p-5">
+      <label className="flex flex-1 cursor-pointer items-center gap-3 text-sm font-semibold text-muted-foreground">
+        <FileUp size={18} className="text-primary" /> Dosya seç (PNG, JPG, WebP, SVG, GIF, PDF — çoklu seçim desteklenir)
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,application/pdf" multiple className="sr-only" />
+      </label>
+      <button type="submit" disabled={uploading} className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}{uploading ? "Yükleniyor…" : "Yükle"}</button>
+    </form>
+    {list.data && list.data.length === 0 && <div className="rounded-xl border border-border bg-card p-10 text-center"><p className="text-sm text-muted-foreground">Henüz dosya yüklenmemiş.</p></div>}
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {filtered.map((a) => {
+        const isImage = a.mimeType.startsWith("image/");
+        return <div key={a.id} data-testid={`asset-${a.id}`} className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex h-40 items-center justify-center bg-muted/40">
+            {isImage ? <img src={`/api/media/${a.storagePath}`} alt={a.altText || a.fileName} className="h-full w-full object-contain" loading="lazy" /> : <FileText size={40} className="text-muted-foreground" />}
+          </div>
+          <div className="space-y-2 p-4">
+            {editingId === a.id ? <div className="space-y-2">
+              <input className={inputCls} value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Başlık" />
+              <input className={inputCls} value={editAlt} onChange={(e) => setEditAlt(e.target.value)} placeholder="ALT metni (SEO)" />
+              <input className={inputCls} value={editFolder} onChange={(e) => setEditFolder(e.target.value)} placeholder="Klasör" />
+              <div className="flex gap-2 pt-1"><button type="button" onClick={saveEdit} className="flex-1 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white">Kaydet</button><button type="button" onClick={() => setEditingId(null)} className="rounded-md px-3 py-1.5 text-xs font-bold text-muted-foreground hover:bg-muted">İptal</button></div>
+            </div> : <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0"><p className="truncate text-sm font-bold">{a.title || a.fileName}</p><p className="truncate text-xs text-muted-foreground">{a.fileName} · {formatBytes(a.size)}</p><p className="mt-1 text-[11px] font-semibold text-primary">{a.folder ?? "genel"}</p></div>
+              <div className="flex shrink-0 gap-1">
+                <button type="button" data-testid={`edit-${a.id}`} title="Düzenle" onClick={() => startEdit(a)} className="rounded p-1.5 text-muted-foreground hover:bg-muted"><Pencil size={14} /></button>
+                <a href={`/api/media/${a.storagePath}`} target="_blank" rel="noreferrer" title="Aç" className="rounded p-1.5 text-muted-foreground hover:bg-muted"><ExternalLink size={14} /></a>
+                <button type="button" data-testid={`delete-${a.id}`} title="Sil" onClick={() => { if (confirm(`"${a.fileName}" silinsin mi?`)) del.mutate({ id: Number(a.id) }, { onSuccess: invalidate }); }} className="rounded p-1.5 text-red-500 hover:bg-red-50"><Trash2 size={14} /></button>
+              </div>
+            </div>}
+          </div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// Pages
+// ---------------------------------------------------------------------------
+function PagesAdmin() {
+  const list = useListAdminPages();
+  const create = useCreateAdminPage();
+  const update = useUpdateAdminPage();
+  const del = useDeleteAdminPage();
+  const qc = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [slug, setSlug] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [template, setTemplate] = useState("static");
+  const [published, setPublished] = useState(true);
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ["/admin/pages"] }); qc.invalidateQueries({ queryKey: ["/pages"] }); };
+
+  const reset = () => { setEditingId(null); setSlug(""); setTitle(""); setContent(""); setTemplate("static"); setPublished(true); setSeoTitle(""); setSeoDescription(""); };
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!slug || !title) return;
+    try {
+      if (editingId) {
+        await update.mutateAsync({ id: Number(editingId), data: { slug, title, content, template, published, seoTitle, seoDescription } });
+      } else {
+        await create.mutateAsync({ data: { slug, title, content, template, published, seoTitle, seoDescription } });
+      }
+      reset();
+      invalidate();
+    } catch (err) {
+      const msg = String((err as Error)?.message ?? "Kaydedilemedi");
+      window.alert(msg.includes("409") ? "Bu sayfa adresi zaten kullanımda." : "Kaydedilemedi: " + msg);
+      void err;
+    }
+  };
+
+  const startEdit = (p: AdminPage) => { setEditingId(p.id); setSlug(p.slug); setTitle(p.title); setContent(p.content ?? ""); setTemplate(p.template ?? "static"); setPublished(p.published); setSeoTitle(p.seoTitle ?? ""); setSeoDescription(p.seoDescription ?? ""); };
+
+  return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="eyebrow">Statik içerik</p><h2 className="mt-2 font-display text-2xl font-semibold">Sayfa yönetimi</h2><p className="mt-1 text-sm text-muted-foreground">Site içinde yeni sayfalar oluşturun, mevcut sayfaların içeriğini düzenleyin. Hazır şablonlar ve SEO meta alanları desteklenir.</p></div>
+    </div>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Section title={editingId ? "Sayfayı düzenle" : "Yeni sayfa"}>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Sayfa adresi (slug)"><input className={inputCls} value={slug} onChange={(e) => setSlug(e.target.value)} required placeholder="ornek-sayfa" /></Field>
+            <Field label="Şablon"><select className={inputCls} value={template} onChange={(e) => setTemplate(e.target.value)}><option value="static">Statik metin</option><option value="full-width">Tam genişlik</option><option value="landing">Tanıtım sayfası</option></select></Field>
+          </div>
+          <Field label="Sayfa başlığı"><input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} required /></Field>
+          <Field label="İçerik" hint="Paragrafları boş satırla ayırın; ## başlık, - madde işareti, [metin](adres) bağlantı desteklenir."><textarea rows={8} className={inputCls} value={content} onChange={(e) => setContent(e.target.value)} /></Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="SEO başlığı"><input className={inputCls} value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} /></Field>
+            <Field label="SEO açıklaması"><input className={inputCls} value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} /></Field>
+          </div>
+          <label className="flex items-center gap-2.5 text-sm font-semibold"><input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-primary" /> Yayında</label>
+          <div className="flex items-end justify-end gap-3">
+            {editingId && <button type="button" onClick={reset} className="rounded-md px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted">Vazgeç</button>}
+            <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white"><Save size={15} /> {editingId ? "Güncelle" : "Oluştur"}</button>
+          </div>
+        </form>
+      </Section>
+      <Section title={`Sayfalar (${(list.data ?? []).length})`}>
+        <div className="space-y-2.5">
+          {(list.data ?? []).map((p) => <div key={p.id} data-testid={`page-${p.id}`} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3.5">
+            <div className="min-w-0"><p className="truncate font-semibold">{p.title}</p><p className="mt-0.5 text-xs text-muted-foreground">/{p.slug}{!p.published && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Taslak</span>}</p></div>
+            <div className="flex shrink-0 gap-1.5">
+              <a href={`/${p.slug}`} target="_blank" rel="noreferrer" title="Görüntüle" className="rounded p-1.5 text-muted-foreground hover:bg-muted"><ExternalLink size={14} /></a>
+              <button type="button" onClick={() => startEdit(p)} title="Düzenle" className="rounded p-1.5 text-muted-foreground hover:bg-muted"><Pencil size={14} /></button>
+              <button type="button" onClick={() => { if (confirm(`"${p.title}" sayfası silinsin mi?`)) del.mutate({ id: Number(p.id) }, { onSuccess: invalidate }); }} title="Sil" className="rounded p-1.5 text-red-500 hover:bg-red-50"><Trash2 size={14} /></button>
+            </div>
+          </div>)}
+          {(list.data ?? []).length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Henüz özel sayfa yok.</p>}
+        </div>
+      </Section>
+    </div>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// Redirect rules
+// ---------------------------------------------------------------------------
+function RedirectsAdmin() {
+  const list = useListAdminRedirectRules();
+  const create = useCreateAdminRedirectRule();
+  const update = useUpdateAdminRedirectRule();
+  const del = useDeleteAdminRedirectRule();
+  const qc = useQueryClient();
+  const [fromPath, setFromPath] = useState("");
+  const [toPath, setToPath] = useState("");
+  const [statusCode, setStatusCode] = useState<301 | 302>(301);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ["/admin/redirects"] }); };
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!fromPath.startsWith("/") || !toPath.startsWith("/")) { window.alert("Yollar / ile başlamalı (örn. /eski-sayfa)."); return; }
+    const payload = { fromPath, toPath, statusCode };
+    try {
+      if (editingId) await update.mutateAsync({ id: Number(editingId), data: payload });
+      else await create.mutateAsync({ data: payload });
+      setFromPath(""); setToPath(""); setStatusCode(301); setEditingId(null);
+      invalidate();
+    } catch (err) {
+      window.alert(String((err as Error)?.message ?? "Kaydedilemedi"));
+      void err;
+    }
+  };
+
+  return <div className="space-y-6">
+    <div><p className="eyebrow">SEO</p><h2 className="mt-2 font-display text-2xl font-semibold">Yönlendirme kuralları</h2><p className="mt-1 text-sm text-muted-foreground">Eski veya taşınan adresleri yeni adreslere 301/302 ile yönlendirin. Kurallar 1 dakikalık önbellekle site genelinde uygulanır.</p></div>
+    <Section title={editingId ? "Kuralı düzenle" : "Yeni kural"}>
+      <form onSubmit={submit} className="grid gap-4 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
+        <Field label="Kaynak (from)"><input className={inputCls} value={fromPath} onChange={(e) => setFromPath(e.target.value)} placeholder="/eski-sayfa" required /></Field>
+        <Field label="Hedef (to)"><input className={inputCls} value={toPath} onChange={(e) => setToPath(e.target.value)} placeholder="/yeni-sayfa" required /></Field>
+        <Field label="Tür"><select className={inputCls} value={statusCode} onChange={(e) => setStatusCode(Number(e.target.value) as 301 | 302)}><option value={301}>301 — Kalıcı</option><option value={302}>302 — Geçici</option></select></Field>
+        <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white"><Save size={15} /> {editingId ? "Güncelle" : "Ekle"}</button>
+      </form>
+    </Section>
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      {(list.data ?? []).map((r) => <div key={r.id} data-testid={`rule-${r.id}`} className="flex items-center justify-between gap-3 border-b border-border/60 p-4 last:border-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2"><code className="rounded bg-muted px-2 py-1 font-mono text-xs">{r.fromPath}</code><Link2 size={14} className="shrink-0 text-muted-foreground" /><code className="rounded bg-muted px-2 py-1 font-mono text-xs text-primary">{r.toPath}</code><span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">{r.statusCode}</span>{!r.enabled && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Kapalı</span>}</div>
+        <div className="flex shrink-0 gap-1.5">
+          <button type="button" onClick={() => { setEditingId(r.id); setFromPath(r.fromPath); setToPath(r.toPath); setStatusCode(r.statusCode as 301 | 302); }} title="Düzenle" className="rounded p-1.5 text-muted-foreground hover:bg-muted"><Pencil size={14} /></button>
+          <button type="button" onClick={() => update.mutate({ id: Number(r.id), data: { fromPath: r.fromPath, toPath: r.toPath, statusCode: r.statusCode as 301 | 302, enabled: !r.enabled } }, { onSuccess: invalidate })} title={r.enabled ? "Kapat" : "Aç"} className="rounded p-1.5 text-muted-foreground hover:bg-muted"><CheckCheck size={14} /></button>
+          <button type="button" onClick={() => { if (confirm(`"${r.fromPath}" kuralı silinsin mi?`)) del.mutate({ id: Number(r.id) }, { onSuccess: invalidate }); }} title="Sil" className="rounded p-1.5 text-red-500 hover:bg-red-50"><Trash2 size={14} /></button>
+        </div>
+      </div>)}
+      {(list.data ?? []).length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">Henüz yönlendirme kuralı yok.</p>}
+    </div>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+const ROLE_LABELS: Record<string, string> = { super_admin: "Süper yönetici", admin: "Yönetici", editor: "İçerik editörü", media_manager: "Medya yöneticisi", viewer: "İzleyici" };
+
+function UsersAdmin() {
+  const list = useListAdminUsers();
+  const update = useUpdateAdminUser();
+  const qc = useQueryClient();
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ["/admin/users"] }); };
+  const rows = list.data ?? [];
+  return <div className="space-y-6">
+    <div><p className="eyebrow">Erişim yönetimi</p><h2 className="mt-2 font-display text-2xl font-semibold">Kullanıcılar</h2><p className="mt-1 text-sm text-muted-foreground">Platforma giriş yapan hesaplar ve rolleri. Rol değişiklikleri bir sonraki girişte geçerli olur.</p></div>
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      <table className="w-full min-w-[720px] text-left text-sm">
+        <thead><tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground"><th className="px-4 py-3">Kullanıcı</th><th className="px-4 py-3">E-posta</th><th className="px-4 py-3">Rol</th><th className="px-4 py-3">Durum</th><th className="px-4 py-3">Son giriş</th></tr></thead>
+        <tbody>
+          {rows.map((u) => <tr key={u.id} data-testid={`user-${u.id}`} className="border-b border-border/60 last:border-0">
+            <td className="px-4 py-3"><div className="flex items-center gap-3">{u.profileImageUrl ? <img src={u.profileImageUrl} alt="" className="h-9 w-9 rounded-full object-cover" /> : <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-bold text-primary">{(u.firstName ?? u.email ?? "?").charAt(0).toUpperCase()}</span>}<div><p className="font-semibold">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</p>{u.id && <p className="text-[11px] text-muted-foreground">{u.id.slice(0, 12)}…</p>}</div></div></td>
+            <td className="px-4 py-3 text-muted-foreground">{u.email ?? "—"}</td>
+            <td className="px-4 py-3"><select data-testid={`role-${u.id}`} className="rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-bold" value={u.role} onChange={(e) => update.mutate({ id: u.id, data: { role: e.target.value as AdminUser["role"], isActive: u.isActive } }, { onSuccess: invalidate })}>{Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
+            <td className="px-4 py-3"><button type="button" data-testid={`toggle-${u.id}`} onClick={() => update.mutate({ id: u.id, data: { role: u.role, isActive: !u.isActive } }, { onSuccess: invalidate })} className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${u.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{u.isActive ? "Aktif" : "Pasif"}</button></td>
+            <td className="px-4 py-3 text-xs text-muted-foreground">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("tr-TR") : "—"}</td>
+          </tr>)}
+          {rows.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">Henüz kullanıcı yok.</td></tr>}
+        </tbody>
+      </table>
+    </div>
   </div>;
 }

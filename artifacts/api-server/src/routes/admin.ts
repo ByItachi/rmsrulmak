@@ -6,26 +6,38 @@ import {
   brandsTable,
   categoriesTable,
   contactMessagesTable,
+  mediaAssetsTable,
+  pagesTable,
   postsTable,
   productRequestsTable,
   productsTable,
+  redirectRulesTable,
   sectorsTable,
   settingsTable,
   slidersTable,
   siteSectionsTable,
+  usersTable,
 } from "@workspace/db";
 import {
   CreateBrandBody,
   CreateCategoryBody,
+  CreateAdminMediaAssetBody,
+  CreateAdminPageBody,
   CreatePostBody,
   CreateProductBody,
+  CreateAdminRedirectRuleBody,
   CreateSectorBody,
   CreateSiteSectionBody,
   CreateSliderBody,
   DeleteBrandParams,
   DeleteCategoryParams,
+  DeleteAdminMediaAssetParams,
+  DeleteAdminPageParams,
+  UpdateAdminPageParams,
+  UpdateAdminMediaAssetParams,
   DeletePostParams,
   DeleteProductParams,
+  DeleteAdminRedirectRuleParams,
   DeleteSectorParams,
   DeleteSiteSectionParams,
   DeleteSliderParams,
@@ -34,12 +46,20 @@ import {
   ListAdminBrandsResponse,
   ListAdminCategoriesResponse,
   ListAdminContactMessagesResponse,
+  ListAdminMediaAssetsResponse,
+  ListAdminPagesResponse,
   ListAdminPostsResponse,
   ListAdminProductsResponse,
+  ListAdminRedirectRulesResponse,
   ListAdminSectorsResponse,
   ListAdminSiteSectionsResponse,
   ListAdminSlidersResponse,
+  ListAdminUsersResponse,
   UpdateAdminSettingsBody,
+  UpdateAdminMediaAssetBody,
+  UpdateAdminPageBody,
+  UpdateAdminRedirectRuleBody,
+  UpdateAdminUserBody,
   UpdateBrandBody,
   UpdateBrandParams,
   UpdateCategoryBody,
@@ -50,15 +70,19 @@ import {
   UpdatePostParams,
   UpdateProductBody,
   UpdateProductParams,
+  UpdateRedirectRuleBody,
+  UpdateAdminRedirectRuleParams,
   UpdateSectorBody,
   UpdateSectorParams,
   UpdateSiteSectionBody,
   UpdateSiteSectionParams,
   UpdateSliderBody,
   UpdateSliderParams,
+  UpdateAdminUserParams,
 } from "@workspace/api-zod";
 import { requireCatalogAdmin } from "../middlewares/catalogAdmin";
 import { isUniqueViolation, slugify } from "../lib/contentFallbacks";
+import { deleteMediaFile, isAllowedFile, saveMediaFile } from "../lib/mediaStore";
 
 const router: IRouter = Router();
 
@@ -707,6 +731,8 @@ const SETTING_GROUPS: Record<string, string> = {
   general: "Genel Ayarlar",
   smtp: "SMTP Ayarları",
   seo: "SEO & Google Search Console",
+  integrations: "Google & Meta Entegrasyonları",
+  theme: "Tema ve Renkler",
 };
 
 router.get("/admin/settings", async (_req, res): Promise<void> => {
@@ -964,4 +990,382 @@ router.delete("/admin/site-sections/:id", async (req, res): Promise<void> => {
     return;
   }
   res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// Media library
+// ---------------------------------------------------------------------------
+router.get("/admin/media", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(mediaAssetsTable)
+    .orderBy(desc(mediaAssetsTable.createdAt));
+  res.json(ListAdminMediaAssetsResponse.parse(rows.map(mediaAssetDto)));
+});
+
+function mediaAssetDto(row: typeof mediaAssetsTable.$inferSelect) {
+  return {
+    id: String(row.id),
+    storagePath: row.storagePath,
+    fileName: row.fileName,
+    title: row.title,
+    description: row.description,
+    altText: row.altText,
+    mimeType: row.mimeType,
+    size: row.size,
+    folder: row.folder,
+    checksum: row.checksum,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+router.post("/admin/media", async (req, res): Promise<void> => {
+  const parsed = CreateAdminMediaAssetBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Geçersiz dosya verisi." });
+    return;
+  }
+  const { fileName, mimeType, base64, title, altText, description, folder } =
+    parsed.data;
+  if (!isAllowedFile(mimeType, fileName)) {
+    res.status(400).json({
+      error: "Desteklenmeyen dosya türü. Görsel (png, jpg, webp, svg, gif) veya PDF yükleyebilirsiniz.",
+    });
+    return;
+  }
+  let saved: { storagePath: string; size: number; checksum: string };
+  try {
+    saved = saveMediaFile(base64, fileName, mimeType);
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: error instanceof Error ? error.message : "Dosya kaydedilemedi." });
+    return;
+  }
+  const [row] = await db
+    .insert(mediaAssetsTable)
+    .values({
+      storagePath: saved.storagePath,
+      fileName,
+      mimeType,
+      size: saved.size,
+      checksum: saved.checksum,
+      title: title ?? "",
+      altText: altText ?? "",
+      description: description ?? "",
+      folder: folder ?? "genel",
+    })
+    .returning();
+  res.status(201).json(mediaAssetDto(row));
+});
+
+router.patch("/admin/media/:id", async (req, res): Promise<void> => {
+  const params = UpdateAdminMediaAssetParams.safeParse(req.params);
+  const body = UpdateAdminMediaAssetBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .update(mediaAssetsTable)
+    .set({
+      title: body.data.title,
+      altText: body.data.altText,
+      description: body.data.description,
+      folder: body.data.folder,
+    })
+    .where(eq(mediaAssetsTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Dosya bulunamadı" });
+    return;
+  }
+  res.json(mediaAssetDto(row));
+});
+
+router.delete("/admin/media/:id", async (req, res): Promise<void> => {
+  const params = DeleteAdminMediaAssetParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .delete(mediaAssetsTable)
+    .where(eq(mediaAssetsTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Dosya bulunamadı" });
+    return;
+  }
+  try {
+    deleteMediaFile(row.storagePath);
+  } catch {
+    // Fiziksel dosya zaten yoksa sorun değil; kayıt silindi.
+  }
+  res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// Pages
+// ---------------------------------------------------------------------------
+router.get("/admin/pages", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(pagesTable)
+    .orderBy(asc(pagesTable.position), asc(pagesTable.id));
+  res.json(ListAdminPagesResponse.parse(rows.map(pageAdminDto)));
+});
+
+function pageAdminDto(row: typeof pagesTable.$inferSelect) {
+  return {
+    id: String(row.id),
+    slug: row.slug,
+    title: row.title,
+    content: row.content,
+    template: row.template,
+    published: row.published,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    position: row.position,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+router.post("/admin/pages", async (req, res): Promise<void> => {
+  const parsed = CreateAdminPageBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Geçersiz sayfa verisi." });
+    return;
+  }
+  const body = parsed.data;
+  const slug = slugify(body.slug);
+  if (!slug) {
+    res.status(400).json({ error: "Geçersiz sayfa adresi (slug)." });
+    return;
+  }
+  try {
+    const [row] = await db
+      .insert(pagesTable)
+      .values({
+        slug,
+        title: body.title,
+        content: body.content,
+        template: body.template ?? "static",
+        published: body.published ?? true,
+        seoTitle: body.seoTitle ?? "",
+        seoDescription: body.seoDescription ?? "",
+        position: body.position ?? 0,
+      })
+      .returning();
+    res.status(201).json(pageAdminDto(row));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      slugConflict(res);
+      return;
+    }
+    throw error;
+  }
+});
+
+router.patch("/admin/pages/:id", async (req, res): Promise<void> => {
+  const params = UpdateAdminPageParams.safeParse(req.params);
+  const body = UpdateAdminPageBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const next = { ...body.data };
+  if (next.slug) {
+    next.slug = slugify(next.slug);
+    if (!next.slug) {
+      res.status(400).json({ error: "Geçersiz sayfa adresi (slug)." });
+      return;
+    }
+  }
+  try {
+    const [row] = await db
+      .update(pagesTable)
+      .set(next)
+      .where(eq(pagesTable.id, params.data.id))
+      .returning();
+    if (!row) {
+      res.status(404).json({ error: "Sayfa bulunamadı" });
+      return;
+    }
+    res.json(pageAdminDto(row));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      slugConflict(res);
+      return;
+    }
+    throw error;
+  }
+});
+
+router.delete("/admin/pages/:id", async (req, res): Promise<void> => {
+  const params = DeleteAdminPageParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .delete(pagesTable)
+    .where(eq(pagesTable.id, params.data.id))
+    .returning({ id: pagesTable.id });
+  if (!row) {
+    res.status(404).json({ error: "Sayfa bulunamadı" });
+    return;
+  }
+  res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// Redirect rules
+// ---------------------------------------------------------------------------
+router.get("/admin/redirects", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(redirectRulesTable)
+    .orderBy(asc(redirectRulesTable.position), asc(redirectRulesTable.id));
+  res.json(ListAdminRedirectRulesResponse.parse(rows.map(redirectDto)));
+});
+
+function redirectDto(row: typeof redirectRulesTable.$inferSelect) {
+  return {
+    id: String(row.id),
+    fromPath: row.fromPath,
+    toPath: row.toPath,
+    statusCode: row.statusCode,
+    enabled: row.enabled,
+    position: row.position,
+    createdAt: row.createdAt,
+  };
+}
+
+router.post("/admin/redirects", async (req, res): Promise<void> => {
+  const parsed = CreateAdminRedirectRuleBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Geçersiz yönlendirme verisi." });
+    return;
+  }
+  const body = parsed.data;
+  try {
+    const [row] = await db
+      .insert(redirectRulesTable)
+      .values({
+        fromPath: body.fromPath,
+        toPath: body.toPath,
+        statusCode: body.statusCode ?? 301,
+        enabled: body.enabled ?? true,
+        position: body.position ?? 0,
+      })
+      .returning();
+    res.status(201).json(redirectDto(row));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      res.status(409).json({ error: "Bu kaynak adresi için kural zaten var." });
+      return;
+    }
+    throw error;
+  }
+});
+
+router.patch("/admin/redirects/:id", async (req, res): Promise<void> => {
+  const params = UpdateAdminRedirectRuleParams.safeParse(req.params);
+  const body = UpdateAdminRedirectRuleBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  try {
+    const [row] = await db
+      .update(redirectRulesTable)
+      .set(body.data)
+      .where(eq(redirectRulesTable.id, params.data.id))
+      .returning();
+    if (!row) {
+      res.status(404).json({ error: "Kural bulunamadı" });
+      return;
+    }
+    res.json(redirectDto(row));
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      res.status(409).json({ error: "Bu kaynak adresi için kural zaten var." });
+      return;
+    }
+    throw error;
+  }
+});
+
+router.delete("/admin/redirects/:id", async (req, res): Promise<void> => {
+  const params = DeleteAdminRedirectRuleParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .delete(redirectRulesTable)
+    .where(eq(redirectRulesTable.id, params.data.id))
+    .returning({ id: redirectRulesTable.id });
+  if (!row) {
+    res.status(404).json({ error: "Kural bulunamadı" });
+    return;
+  }
+  res.status(204).end();
+});
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+router.get("/admin/users", async (_req, res): Promise<void> => {
+  const rows = await db
+    .select()
+    .from(usersTable)
+    .orderBy(desc(usersTable.createdAt));
+  res.json(
+    ListAdminUsersResponse.parse(
+      rows.map((u) => ({
+        id: u.id,
+        email: u.email,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        profileImageUrl: u.profileImageUrl,
+        role: u.role,
+        isActive: u.isActive,
+        lastLoginAt: u.lastLoginAt,
+        createdAt: u.createdAt,
+      })),
+    ),
+  );
+});
+
+router.patch("/admin/users/:id", async (req, res): Promise<void> => {
+  const params = UpdateAdminUserParams.safeParse(req.params);
+  const body = UpdateAdminUserBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Geçersiz istek." });
+    return;
+  }
+  const [row] = await db
+    .update(usersTable)
+    .set({ role: body.data.role, isActive: body.data.isActive })
+    .where(eq(usersTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    return;
+  }
+  res.json({
+    id: row.id,
+    email: row.email,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    profileImageUrl: row.profileImageUrl,
+    role: row.role,
+    isActive: row.isActive,
+    lastLoginAt: row.lastLoginAt,
+    createdAt: row.createdAt,
+  });
 });

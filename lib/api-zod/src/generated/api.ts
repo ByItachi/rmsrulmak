@@ -1382,3 +1382,410 @@ export const UpdateAdminSettingsResponseItem = zod.object({
 export const UpdateAdminSettingsResponse = zod.array(UpdateAdminSettingsResponseItem)
 
 
+/**
+ * @summary Get a published page by slug
+ */
+
+
+
+export const GetPublicPageParams = zod.object({
+  "slug": zod.coerce.string().min(1)
+})
+
+export const GetPublicPageResponse = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "template": zod.string(),
+  "seoTitle": zod.string().optional(),
+  "seoDescription": zod.string().optional(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List uploaded media assets
+ */
+export const ListAdminMediaAssetsResponseItem = zod.object({
+  "id": zod.string(),
+  "storagePath": zod.string(),
+  "fileName": zod.string(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "altText": zod.string().optional(),
+  "mimeType": zod.string(),
+  "size": zod.number().int(),
+  "folder": zod.string().optional(),
+  "checksum": zod.string().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+export const ListAdminMediaAssetsResponse = zod.array(ListAdminMediaAssetsResponseItem)
+
+
+/**
+ * @summary Upload a media asset (base64 encoded file)
+ */
+export const createAdminMediaAssetBodyFileNameMax = 255;
+
+export const createAdminMediaAssetBodyMimeTypeMax = 120;
+
+
+export const createAdminMediaAssetBodyTitleMax = 200;
+
+export const createAdminMediaAssetBodyAltTextMax = 300;
+
+export const createAdminMediaAssetBodyDescriptionMax = 500;
+
+export const createAdminMediaAssetBodyFolderMax = 80;
+
+
+
+export const CreateAdminMediaAssetBody = zod.object({
+  "fileName": zod.string().min(1).max(createAdminMediaAssetBodyFileNameMax),
+  "mimeType": zod.string().max(createAdminMediaAssetBodyMimeTypeMax),
+  "size": zod.number().int().optional(),
+  "base64": zod.string().min(1),
+  "title": zod.string().max(createAdminMediaAssetBodyTitleMax).optional(),
+  "altText": zod.string().max(createAdminMediaAssetBodyAltTextMax).optional(),
+  "description": zod.string().max(createAdminMediaAssetBodyDescriptionMax).optional(),
+  "folder": zod.string().max(createAdminMediaAssetBodyFolderMax).optional()
+})
+
+export const CreateAdminMediaAssetResponse = zod.object({
+  "id": zod.string(),
+  "storagePath": zod.string(),
+  "fileName": zod.string(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "altText": zod.string().optional(),
+  "mimeType": zod.string(),
+  "size": zod.number().int(),
+  "folder": zod.string().optional(),
+  "checksum": zod.string().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a media asset's metadata
+ */
+
+
+
+export const UpdateAdminMediaAssetParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateAdminMediaAssetBodyTitleMax = 200;
+
+export const updateAdminMediaAssetBodyAltTextMax = 300;
+
+export const updateAdminMediaAssetBodyDescriptionMax = 500;
+
+export const updateAdminMediaAssetBodyFolderMax = 80;
+
+
+
+export const UpdateAdminMediaAssetBody = zod.object({
+  "title": zod.string().max(updateAdminMediaAssetBodyTitleMax),
+  "altText": zod.string().max(updateAdminMediaAssetBodyAltTextMax).optional(),
+  "description": zod.string().max(updateAdminMediaAssetBodyDescriptionMax).optional(),
+  "folder": zod.string().max(updateAdminMediaAssetBodyFolderMax).optional()
+})
+
+export const UpdateAdminMediaAssetResponse = zod.object({
+  "id": zod.string(),
+  "storagePath": zod.string(),
+  "fileName": zod.string(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "altText": zod.string().optional(),
+  "mimeType": zod.string(),
+  "size": zod.number().int(),
+  "folder": zod.string().optional(),
+  "checksum": zod.string().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Delete a media asset (record and file)
+ */
+
+
+
+export const DeleteAdminMediaAssetParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteAdminMediaAssetResponse = zod.void()
+
+
+/**
+ * @summary List site pages
+ */
+export const ListAdminPagesResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "content": zod.string().optional(),
+  "template": zod.string().optional(),
+  "published": zod.boolean(),
+  "seoTitle": zod.string().optional(),
+  "seoDescription": zod.string().optional(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListAdminPagesResponse = zod.array(ListAdminPagesResponseItem)
+
+
+/**
+ * @summary Create a site page
+ */
+export const createAdminPageBodySlugMin = 2;
+export const createAdminPageBodySlugMax = 160;
+
+export const createAdminPageBodyTitleMin = 2;
+export const createAdminPageBodyTitleMax = 200;
+
+export const createAdminPageBodyContentMax = 30000;
+
+export const createAdminPageBodyTemplateMax = 40;
+
+export const createAdminPageBodySeoTitleMax = 160;
+
+export const createAdminPageBodySeoDescriptionMax = 300;
+
+
+
+export const CreateAdminPageBody = zod.object({
+  "slug": zod.string().min(createAdminPageBodySlugMin).max(createAdminPageBodySlugMax),
+  "title": zod.string().min(createAdminPageBodyTitleMin).max(createAdminPageBodyTitleMax),
+  "content": zod.string().max(createAdminPageBodyContentMax),
+  "template": zod.string().max(createAdminPageBodyTemplateMax).optional(),
+  "published": zod.boolean().optional(),
+  "seoTitle": zod.string().max(createAdminPageBodySeoTitleMax).optional(),
+  "seoDescription": zod.string().max(createAdminPageBodySeoDescriptionMax).optional(),
+  "position": zod.number().int().optional()
+})
+
+export const CreateAdminPageResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "content": zod.string().optional(),
+  "template": zod.string().optional(),
+  "published": zod.boolean(),
+  "seoTitle": zod.string().optional(),
+  "seoDescription": zod.string().optional(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a site page
+ */
+
+
+
+export const UpdateAdminPageParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateAdminPageBodySlugMin = 2;
+export const updateAdminPageBodySlugMax = 160;
+
+export const updateAdminPageBodyTitleMin = 2;
+export const updateAdminPageBodyTitleMax = 200;
+
+export const updateAdminPageBodyContentMax = 30000;
+
+export const updateAdminPageBodyTemplateMax = 40;
+
+export const updateAdminPageBodySeoTitleMax = 160;
+
+export const updateAdminPageBodySeoDescriptionMax = 300;
+
+
+
+export const UpdateAdminPageBody = zod.object({
+  "slug": zod.string().min(updateAdminPageBodySlugMin).max(updateAdminPageBodySlugMax).optional(),
+  "title": zod.string().min(updateAdminPageBodyTitleMin).max(updateAdminPageBodyTitleMax),
+  "content": zod.string().max(updateAdminPageBodyContentMax),
+  "template": zod.string().max(updateAdminPageBodyTemplateMax).optional(),
+  "published": zod.boolean().optional(),
+  "seoTitle": zod.string().max(updateAdminPageBodySeoTitleMax).optional(),
+  "seoDescription": zod.string().max(updateAdminPageBodySeoDescriptionMax).optional(),
+  "position": zod.number().int().optional()
+})
+
+export const UpdateAdminPageResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "content": zod.string().optional(),
+  "template": zod.string().optional(),
+  "published": zod.boolean(),
+  "seoTitle": zod.string().optional(),
+  "seoDescription": zod.string().optional(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a site page
+ */
+
+
+
+export const DeleteAdminPageParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteAdminPageResponse = zod.void()
+
+
+/**
+ * @summary List redirect rules
+ */
+export const ListAdminRedirectRulesResponseItem = zod.object({
+  "id": zod.string(),
+  "fromPath": zod.string(),
+  "toPath": zod.string(),
+  "statusCode": zod.number().int(),
+  "enabled": zod.boolean(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminRedirectRulesResponse = zod.array(ListAdminRedirectRulesResponseItem)
+
+
+/**
+ * @summary Create a redirect rule
+ */
+export const createAdminRedirectRuleBodyFromPathMax = 500;
+
+export const createAdminRedirectRuleBodyToPathMax = 500;
+
+
+
+export const CreateAdminRedirectRuleBody = zod.object({
+  "fromPath": zod.string().min(1).max(createAdminRedirectRuleBodyFromPathMax),
+  "toPath": zod.string().min(1).max(createAdminRedirectRuleBodyToPathMax),
+  "statusCode": zod.union([zod.literal(301),zod.literal(302)]).optional(),
+  "enabled": zod.boolean().optional(),
+  "position": zod.number().int().optional()
+})
+
+export const CreateAdminRedirectRuleResponse = zod.object({
+  "id": zod.string(),
+  "fromPath": zod.string(),
+  "toPath": zod.string(),
+  "statusCode": zod.number().int(),
+  "enabled": zod.boolean(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a redirect rule
+ */
+
+
+
+export const UpdateAdminRedirectRuleParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateAdminRedirectRuleBodyFromPathMax = 500;
+
+export const updateAdminRedirectRuleBodyToPathMax = 500;
+
+
+
+export const UpdateAdminRedirectRuleBody = zod.object({
+  "fromPath": zod.string().min(1).max(updateAdminRedirectRuleBodyFromPathMax),
+  "toPath": zod.string().min(1).max(updateAdminRedirectRuleBodyToPathMax),
+  "statusCode": zod.union([zod.literal(301),zod.literal(302)]).optional(),
+  "enabled": zod.boolean().optional(),
+  "position": zod.number().int().optional()
+})
+
+export const UpdateAdminRedirectRuleResponse = zod.object({
+  "id": zod.string(),
+  "fromPath": zod.string(),
+  "toPath": zod.string(),
+  "statusCode": zod.number().int(),
+  "enabled": zod.boolean(),
+  "position": zod.number().int().optional(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a redirect rule
+ */
+
+
+
+export const DeleteAdminRedirectRuleParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteAdminRedirectRuleResponse = zod.void()
+
+
+/**
+ * @summary List platform users
+ */
+export const ListAdminUsersResponseItem = zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullish(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
+  "role": zod.enum(['super_admin', 'admin', 'editor', 'media_manager', 'viewer']),
+  "isActive": zod.boolean(),
+  "lastLoginAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAdminUsersResponse = zod.array(ListAdminUsersResponseItem)
+
+
+/**
+ * @summary Update a user's role or active status
+ */
+
+
+
+export const UpdateAdminUserParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const UpdateAdminUserBody = zod.object({
+  "role": zod.enum(['super_admin', 'admin', 'editor', 'media_manager', 'viewer']),
+  "isActive": zod.boolean()
+})
+
+export const UpdateAdminUserResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullish(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
+  "role": zod.enum(['super_admin', 'admin', 'editor', 'media_manager', 'viewer']),
+  "isActive": zod.boolean(),
+  "lastLoginAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+

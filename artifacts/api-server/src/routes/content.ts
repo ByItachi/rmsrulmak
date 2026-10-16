@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
 import {
   db,
+  pagesTable,
   postsTable,
   sectorsTable,
   settingsTable,
@@ -11,10 +12,16 @@ import {
 import {
   GetPostParams,
   GetPostResponse,
+  GetPublicPageParams,
+  GetPublicPageResponse,
   ListPostsResponse,
   ListSectorsResponse,
 } from "@workspace/api-zod";
 import { fallbackSectors, fallbackSliders } from "../lib/contentFallbacks";
+import {
+  mediaContentType,
+  readMediaFile,
+} from "../lib/mediaStore";
 
 const router: IRouter = Router();
 
@@ -133,6 +140,11 @@ const PUBLIC_SETTING_KEYS = [
   "ga4_id",
   "gtm_id",
   "meta_pixel_id",
+  "theme_primary",
+  "theme_primary_foreground",
+  "theme_background",
+  "theme_foreground",
+  "theme_accent",
 ] as const;
 
 router.get("/settings/public", async (_req, res): Promise<void> => {
@@ -143,6 +155,53 @@ router.get("/settings/public", async (_req, res): Promise<void> => {
     if (row) out[key] = row.value;
   }
   res.json(out);
+});
+
+router.get("/pages/:slug", async (req, res): Promise<void> => {
+  const parsed = GetPublicPageParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const [row] = await db
+    .select()
+    .from(pagesTable)
+    .where(eq(pagesTable.slug, parsed.data.slug))
+    .limit(1);
+
+  if (!row || !row.published) {
+    res.status(404).json({ error: "Sayfa bulunamadı" });
+    return;
+  }
+
+  res.json(
+    GetPublicPageResponse.parse({
+      slug: row.slug,
+      title: row.title,
+      content: row.content,
+      template: row.template,
+      seoTitle: row.seoTitle,
+      seoDescription: row.seoDescription,
+      updatedAt: row.updatedAt,
+    }),
+  );
+});
+
+router.get("/media/:name", (req, res) => {
+  const name = String(req.params.name ?? "");
+  if (!name || name.includes("/")) {
+    res.status(400).json({ error: "Geçersiz dosya adı." });
+    return;
+  }
+  const buffer = readMediaFile(name);
+  if (!buffer) {
+    res.status(404).json({ error: "Dosya bulunamadı" });
+    return;
+  }
+  res.setHeader("Content-Type", mediaContentType(name));
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  res.send(buffer);
 });
 
 export default router;

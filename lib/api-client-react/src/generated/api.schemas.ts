@@ -681,6 +681,225 @@ export interface SiteSectionUpdate {
   body?: string;
 }
 
+export interface PublicPage {
+  slug: string;
+  title: string;
+  content: string;
+  template: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  updatedAt: string;
+}
+
+export interface AdminPage {
+  id: string;
+  slug: string;
+  title: string;
+  content?: string;
+  template?: string;
+  published: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  position?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePageBody {
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  slug: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 30000 */
+  content: string;
+  /** @maxLength 40 */
+  template?: string;
+  published?: boolean;
+  /** @maxLength 160 */
+  seoTitle?: string;
+  /** @maxLength 300 */
+  seoDescription?: string;
+  position?: number;
+}
+
+export interface UpdatePageBody {
+  /**
+     * @minLength 2
+     * @maxLength 160
+     */
+  slug?: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 30000 */
+  content: string;
+  /** @maxLength 40 */
+  template?: string;
+  published?: boolean;
+  /** @maxLength 160 */
+  seoTitle?: string;
+  /** @maxLength 300 */
+  seoDescription?: string;
+  position?: number;
+}
+
+export interface AdminMediaAsset {
+  id: string;
+  storagePath: string;
+  fileName: string;
+  title?: string;
+  description?: string;
+  altText?: string;
+  mimeType: string;
+  size: number;
+  folder?: string;
+  checksum?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateMediaAssetBody {
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
+  fileName: string;
+  /** @maxLength 120 */
+  mimeType: string;
+  size?: number;
+  /** @minLength 1 */
+  base64: string;
+  /** @maxLength 200 */
+  title?: string;
+  /** @maxLength 300 */
+  altText?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /** @maxLength 80 */
+  folder?: string;
+}
+
+export interface UpdateMediaAssetBody {
+  /** @maxLength 200 */
+  title: string;
+  /** @maxLength 300 */
+  altText?: string;
+  /** @maxLength 500 */
+  description?: string;
+  /** @maxLength 80 */
+  folder?: string;
+}
+
+export interface AdminRedirectRule {
+  id: string;
+  fromPath: string;
+  toPath: string;
+  statusCode: number;
+  enabled: boolean;
+  position?: number;
+  createdAt: string;
+}
+
+export type CreateRedirectRuleBodyStatusCode = typeof CreateRedirectRuleBodyStatusCode[keyof typeof CreateRedirectRuleBodyStatusCode];
+
+
+export const CreateRedirectRuleBodyStatusCode = {
+  NUMBER_301: 301,
+  NUMBER_302: 302,
+} as const;
+
+export interface CreateRedirectRuleBody {
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  fromPath: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  toPath: string;
+  statusCode?: CreateRedirectRuleBodyStatusCode;
+  enabled?: boolean;
+  position?: number;
+}
+
+export type UpdateRedirectRuleBodyStatusCode = typeof UpdateRedirectRuleBodyStatusCode[keyof typeof UpdateRedirectRuleBodyStatusCode];
+
+
+export const UpdateRedirectRuleBodyStatusCode = {
+  NUMBER_301: 301,
+  NUMBER_302: 302,
+} as const;
+
+export interface UpdateRedirectRuleBody {
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  fromPath: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  toPath: string;
+  statusCode?: UpdateRedirectRuleBodyStatusCode;
+  enabled?: boolean;
+  position?: number;
+}
+
+export type AdminUserRole = typeof AdminUserRole[keyof typeof AdminUserRole];
+
+
+export const AdminUserRole = {
+  super_admin: 'super_admin',
+  admin: 'admin',
+  editor: 'editor',
+  media_manager: 'media_manager',
+  viewer: 'viewer',
+} as const;
+
+export interface AdminUser {
+  id: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  firstName?: string | null;
+  /** @nullable */
+  lastName?: string | null;
+  /** @nullable */
+  profileImageUrl?: string | null;
+  role: AdminUserRole;
+  isActive: boolean;
+  /** @nullable */
+  lastLoginAt?: string | null;
+  createdAt: string;
+}
+
+export type UpdateUserBodyRole = typeof UpdateUserBodyRole[keyof typeof UpdateUserBodyRole];
+
+
+export const UpdateUserBodyRole = {
+  super_admin: 'super_admin',
+  admin: 'admin',
+  editor: 'editor',
+  media_manager: 'media_manager',
+  viewer: 'viewer',
+} as const;
+
+export interface UpdateUserBody {
+  role: UpdateUserBodyRole;
+  isActive: boolean;
+}
+
 export type AuthorizationSessionHeaderParameter = string;
 
 /**
