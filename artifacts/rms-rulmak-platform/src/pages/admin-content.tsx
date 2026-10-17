@@ -89,6 +89,13 @@ import type {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
+function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center justify-between gap-3">
+    <div><p className="eyebrow">{eyebrow}</p><h2 className="mt-2 font-display text-2xl font-semibold">{title}</h2>{description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}</div>
+    {action}
+  </div>;
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return <div className="rounded-xl border border-border bg-card p-6"><h2 className="font-display text-lg font-semibold">{title}</h2><div className="mt-5 space-y-4">{children}</div></div>;
 }
@@ -139,6 +146,7 @@ function SlidersAdmin() {
   const rows = (list.data ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return <div className="space-y-6">
+    <PageHeader eyebrow="Ana sayfa" title="Hero sliderlar" description="Ana sayfadaki büyük görsel alanı yöneten slaytlar." />
     <Section title={editingId ? "Sliderı düzenle" : "Yeni hero slider"}>
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Başlık"><input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Örn: Koyo Japon teknolojisi rulmanları" required /></Field>
@@ -197,6 +205,7 @@ function PostsAdmin() {
   };
 
   return <div className="space-y-6">
+    <PageHeader eyebrow="İçerik" title="Blog yazıları" description="Şirket haberleri ve teknik makaleleri yönetin." />
     <Section title={editingId ? "Yazıyı düzenle" : "Yeni blog yazısı"}>
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Başlık"><input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} required /></Field>
@@ -285,7 +294,9 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
     else delSector.mutate({ id: Number(id) }, { onSuccess: invalidate });
   };
 
+  const pageTitle = kind === "brand" ? "Markalar" : kind === "category" ? "Kategoriler" : "Sektörler";
   return <div className="space-y-6">
+    <PageHeader eyebrow="Katalog" title={pageTitle} description={`${labels} kayıtlarını ekleyin, düzenleyin veya kaldırın.`} />
     <Section title={editingId ? `${labels}ı düzenle` : `Yeni ${labels.toLowerCase()}`}>
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Ad"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} required /></Field>
@@ -342,6 +353,7 @@ function SectionsAdmin() {
   };
 
   return <div className="space-y-6">
+    <PageHeader eyebrow="İçerik" title="Site bölümleri" description="Sayfa içi metin bloklarını ve istatistik alanlarını yönetin." />
     <Section title={editingId ? "Bölümü düzenle" : "Yeni site bölümü"}>
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Anahtar (key)" hint="benzersiz"><input className={inputCls} value={key} onChange={(e) => setKey(e.target.value)} placeholder="stat_tecrube" required disabled={!!editingId} /></Field>
@@ -419,6 +431,7 @@ function AdminOverview() {
     return `${names[Number(mo) - 1] ?? mo} ${y.slice(2)}`;
   };
   return <div className="space-y-6">
+    <PageHeader eyebrow="Panel" title="Genel bakış" description="Katalog ve iletişim verilerinin özeti." />
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard icon={PackageSearch} label="Ürünler" value={d?.productCount ?? "—"} sub="Katalogdaki toplam ürün" />
       <KpiCard icon={Layers3} label="Markalar" value={d?.brandCount ?? "—"} sub="Distribütörlüğü yapılan marka" />
@@ -464,7 +477,7 @@ function InquiriesAdmin() {
   };
   return <div className="space-y-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="font-display text-2xl font-semibold">İletişim mesajları</h2>
+      <div><p className="eyebrow">Gelen kutusu</p><h2 className="mt-2 font-display text-2xl font-semibold">İletişim mesajları</h2></div>
       <div className="flex flex-wrap gap-2">
         {(["all", "new", "read", "answered"] as const).map((f) => <button key={f} type="button" data-testid={`filter-${f}`} onClick={() => setFilter(f)} className={`rounded-full px-4 py-2 text-xs font-bold ${filter === f ? "bg-primary text-white" : "border border-border bg-card text-muted-foreground hover:border-primary/40"}`}>{f === "all" ? "Tümü" : f === "new" ? "Yeni" : f === "read" ? "Okundu" : "Yanıtlandı"} ({counts[f]})</button>)}
       </div>
@@ -638,6 +651,7 @@ function ProductsAdmin() {
   };
 
   return <div className="space-y-6">
+    <PageHeader eyebrow="Katalog" title="Ürünler" description="Ürün kataloğunu ekleyin, düzenleyin veya kaldırın." />
     <Section title={editingId ? "Ürünü düzenle" : "Yeni ürün"}>
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Ürün adı"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} required /></Field>
