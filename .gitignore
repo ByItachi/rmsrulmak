@@ -51,3 +51,5 @@ Thumbs.db
 # Yedekler ve runtime medyası
 .backups/
 artifacts/uploads/
+deploy/server.local.json
+deploy/out/

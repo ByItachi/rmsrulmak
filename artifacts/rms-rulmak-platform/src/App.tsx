@@ -135,7 +135,22 @@ function Header() {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [open]);
 
+  const phone = s?.contact_phone || '+90 216 392 41 41';
+  const email = s?.contact_email || 'info@rmsrulmak.com';
+  const address = s?.contact_address || 'Şifa Mah. Şekerpınar Cad. No: 11 4/B, Tuzla / İstanbul';
+
   return <>
+    <div className="hidden border-b border-border/60 bg-sidebar text-sidebar-foreground/80 lg:block">
+      <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-5 text-xs lg:px-8">
+        <div className="flex items-center gap-5 truncate">
+          <span className="flex items-center gap-1.5 truncate"><MapPin size={13} className="shrink-0 text-primary" /> {address}</span>
+        </div>
+        <div className="flex shrink-0 items-center gap-5">
+          <a href={'mailto:' + email} data-testid="link-topbar-email" className="flex items-center gap-1.5 transition-colors hover:text-white"><Mail size={13} className="text-primary" /> {email}</a>
+          <a href={'tel:' + phone.replace(/[^+\d]/g, '')} data-testid="link-topbar-phone" className="flex items-center gap-1.5 transition-colors hover:text-white"><Phone size={13} className="text-primary" /> {phone}</a>
+        </div>
+      </div>
+    </div>
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-[88px] max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
       <Link href="/" data-testid="link-home-logo" className="flex shrink-0 items-center gap-3"><Logo /></Link>

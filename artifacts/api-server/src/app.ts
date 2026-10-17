@@ -76,4 +76,28 @@ app.use(redirectMiddleware);
 
 app.use("/api", router);
 
+// Üretim: derlenmiş frontend'i (Vite dist) aynı süreçten sun + SPA fallback
+import fs from "node:fs";
+import path from "node:path";
+
+const staticDir = process.env["STATIC_DIR"];
+if (staticDir && fs.existsSync(path.join(staticDir, "index.html"))) {
+  const distHandler = express.static(staticDir, {
+    index: "index.html",
+    maxAge: "1h",
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".html")) res.setHeader("Cache-Control", "no-cache");
+      if (filePath.startsWith(path.join(staticDir, "catalog") + path.sep))
+        res.setHeader("Cache-Control", "public, max-age=604800");
+    },
+  });
+  app.use(distHandler);
+  // SPA fallback: /api dışındaki GET istekleri index.html'e gitsin
+  app.use((req, res, next) => {
+    if (req.method !== "GET" || req.path.startsWith("/api/")) return next();
+    res.setHeader("Cache-Control", "no-cache");
+    res.sendFile(path.join(staticDir, "index.html"));
+  });
+}
+
 export default app;
