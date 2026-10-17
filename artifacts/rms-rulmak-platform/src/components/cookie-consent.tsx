@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { X } from 'lucide-react';
+import { Cookie, X } from 'lucide-react';
 import {
   allConsent,
   CONSENT_CHANGED_EVENT,
@@ -93,8 +93,8 @@ export function CookieConsent() {
                 Sitemizde zorunlu çerezlerin yanı sıra deneyiminizi iyileştirmek ve
                 ölçümleme yapmak için çerezler kullanırız. KVKK kapsamında
                 detaylı bilgiyi{' '}
-                <Link href="/cerez-politikasi" data-testid="link-cookie-policy" className="font-bold text-primary underline-offset-2 hover:underline">
-                  Çerez Politikası
+                <Link href="/cerez-politikasi" data-testid="link-cookie-policy" className="inline-flex items-center gap-1 font-bold text-primary underline-offset-2 hover:underline">
+                  <Cookie size={14} /> Çerez Politikası
                 </Link>{' '}
                 sayfamızda bulabilirsiniz. Seçiminizi istediğiniz zaman
                 güncelleyebilirsiniz.
@@ -150,8 +150,8 @@ export function CookieConsent() {
               </button>
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
-              <Link href="/cerez-politikasi" className="underline underline-offset-2 hover:text-primary" data-testid="link-cookie-policy-modal">
-                Çerez Politikası
+              <Link href="/cerez-politikasi" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-primary" data-testid="link-cookie-policy-modal">
+                <Cookie size={12} /> Çerez Politikası
               </Link>{' '}
               ·{' '}
               <Link href="/kvkk" className="underline underline-offset-2 hover:text-primary" data-testid="link-cookie-kvkk-modal">

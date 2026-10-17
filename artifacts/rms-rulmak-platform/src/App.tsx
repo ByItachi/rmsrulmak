@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { useCreateContactMessage, useCreateProductRequest, useGetCurrentAuthUser, useGetDashboardSummary, useGetProduct, useGetPublicPage, useListBrands, useListCategories, useListProducts, useListSliders, useListSiteSections } from '@workspace/api-client-react';
 import { AdminContent } from '@/pages/admin-content';
 import type { Brand, Category, Product, ProductListItem, Sector } from '@workspace/api-client-react';
-import { ArrowDownRight, ArrowRight, ArrowUp, BarChart3, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Cog, Factory, Facebook, FileStack, FileText, Filter, Gauge, Headphones, Image as ImageIcon, Instagram, Landmark, Layers3, Linkedin, Link2, Loader2, LogOut, Mail, MapPin, Menu, MessageCircle, Mountain, PackageSearch, Phone, Search, Settings2, ShieldCheck, Sparkles, Target, Truck, Users, Wheat, X, Youtube, Zap } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, ArrowUp, BarChart3, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Cog, Cookie, Factory, Facebook, FileStack, FileText, Filter, Gauge, Headphones, Image as ImageIcon, Instagram, Landmark, Layers3, Linkedin, Link2, Loader2, LogOut, Mail, MapPin, Menu, MessageCircle, Mountain, PackageSearch, Phone, Search, Settings2, ShieldCheck, Sparkles, Target, Truck, Users, Wheat, X, Youtube, Zap } from 'lucide-react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { CookieConsent } from '@/components/cookie-consent';
@@ -141,13 +141,13 @@ function Header() {
 
   return <>
     <div className="hidden border-b border-border/60 bg-sidebar text-sidebar-foreground/80 lg:block">
-      <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-5 text-xs lg:px-8">
+      <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-5 text-xs font-medium lg:px-8">
         <div className="flex items-center gap-5 truncate">
           <span className="flex items-center gap-1.5 truncate"><MapPin size={13} className="shrink-0 text-primary" /> {address}</span>
         </div>
         <div className="flex shrink-0 items-center gap-5">
-          <a href={'mailto:' + email} data-testid="link-topbar-email" className="flex items-center gap-1.5 transition-colors hover:text-white"><Mail size={13} className="text-primary" /> {email}</a>
-          <a href={'tel:' + phone.replace(/[^+\d]/g, '')} data-testid="link-topbar-phone" className="flex items-center gap-1.5 transition-colors hover:text-white"><Phone size={13} className="text-primary" /> {phone}</a>
+          <a href={'mailto:' + email} data-testid="link-topbar-email" className="flex items-center gap-1.5 font-semibold transition-colors hover:text-white"><Mail size={13} className="text-primary" /> {email}</a>
+          <a href={'tel:' + phone.replace(/[^+\d]/g, '')} data-testid="link-topbar-phone" className="flex items-center gap-1.5 font-semibold transition-colors hover:text-white"><Phone size={13} className="text-primary" /> {phone}</a>
         </div>
       </div>
     </div>
@@ -214,7 +214,7 @@ function Footer() {
       <div><p className="font-display text-lg font-bold text-white">Kurumsal</p><div className="mt-4 flex flex-col gap-3 text-sm text-sidebar-foreground/70"><Link href="/kurumsal">Hakkımızda</Link><Link href="/distributorler" data-testid="link-footer-distributors">Distribütörlüklerimiz</Link><Link href="/bizden-haberler" data-testid="link-footer-news">Bizden Haberler</Link><Link href="/kataloglar" data-testid="link-footer-e-katalog">E-Katalog</Link><Link href="/teknik-dokumanlar">PDF Arşivi</Link><Link href="/iletisim" data-testid="link-footer-support">Teknik destek</Link></div></div>
       <div><p className="font-display text-lg font-bold text-white">Bize ulaşın</p><div className="mt-4 space-y-3 text-sm text-sidebar-foreground/70"><a className="flex gap-2 hover:text-white" href={'tel:' + phone.replace(/[^+\d]/g, '')}><Phone size={15} className="mt-0.5 text-red-400" /> {phone}</a><a className="flex gap-2 hover:text-white" href={'mailto:' + email}><Mail size={15} className="mt-0.5 text-red-400" /> {email}</a><p className="flex gap-2"><MapPin size={15} className="mt-0.5 text-red-400" /> {address}</p></div></div>
     </div>
-    <div className="border-t border-sidebar-border"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-5 py-5 text-xs text-sidebar-foreground/45 sm:flex-row sm:items-center lg:px-8"><span>© {new Date().getFullYear()} {s?.site_name || 'RMS Rulmak'}. Tüm hakları saklıdır.</span><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><Link href="/gizlilik-politikasi" data-testid="link-footer-privacy" className="transition-colors hover:text-white">Gizlilik Politikası</Link><Link href="/kullanim-kosullari" data-testid="link-footer-terms" className="transition-colors hover:text-white">Kullanım Koşulları</Link><Link href="/kvkk" data-testid="link-footer-kvkk" className="transition-colors hover:text-white">KVKK Aydınlatma Metni</Link><Link href="/cerez-politikasi" data-testid="link-footer-cookies" className="transition-colors hover:text-white">Çerez Politikası</Link></div></div></div>
+    <div className="border-t border-sidebar-border"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-5 py-5 text-xs text-sidebar-foreground/45 sm:flex-row sm:items-center lg:px-8"><span>© {new Date().getFullYear()} {s?.site_name || 'RMS Rulmak'}. Tüm hakları saklıdır.</span><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><Link href="/gizlilik-politikasi" data-testid="link-footer-privacy" className="transition-colors hover:text-white">Gizlilik Politikası</Link><Link href="/kullanim-kosullari" data-testid="link-footer-terms" className="transition-colors hover:text-white">Kullanım Koşulları</Link><Link href="/kvkk" data-testid="link-footer-kvkk" className="transition-colors hover:text-white">KVKK Aydınlatma Metni</Link><Link href="/cerez-politikasi" data-testid="link-footer-cookies" className="inline-flex items-center gap-1.5 transition-colors hover:text-white"><Cookie size={13} className="text-red-400" /> Çerez Politikası</Link></div></div></div>
   </footer>;
 }
 
