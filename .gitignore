@@ -53,3 +53,4 @@ Thumbs.db
 artifacts/uploads/
 deploy/server.local.json
 deploy/out/
+deploy/out/admin_cred.json

@@ -21,11 +21,15 @@ function buildTransport(s: Record<string, string>) {
   const host = s.smtp_host?.trim();
   if (!host || host === "smtp.example.com") return null;
   const port = Number(s.smtp_port || 587);
+  // Yerel MTA (cPanel exim) loopback'te STARTTLS el sıkışması bozulabiliyor — düz metin gönder
+  const isLoopback = ["127.0.0.1", "localhost", "::1"].includes(host);
   return nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
+    ...(isLoopback ? { ignoreTLS: true } : {}),
     auth: s.smtp_user ? { user: s.smtp_user, pass: s.smtp_pass ?? "" } : undefined,
+    tls: { rejectUnauthorized: false },
     connectionTimeout: 8000,
     greetingTimeout: 8000,
   });

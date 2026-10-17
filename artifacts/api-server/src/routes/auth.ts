@@ -5,8 +5,13 @@ import {
   LogoutMobileSessionResponse,
 } from '@workspace/api-zod';
 import { db, usersTable } from '@workspace/db';
+import type { AuthUser } from '@workspace/api-zod';
+import { eq } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import * as oidc from 'openid-client';
+import { z } from 'zod';
+
+import { verifyPassword } from '../lib/passwords';
 
 import {
   clearSession,
@@ -129,6 +134,73 @@ router.get('/auth/user', (req: Request, res: Response) => {
       user: req.isAuthenticated() ? req.user : null,
     }),
   );
+});
+
+// Şifreli giriş — Replit OIDC kullanılamayan kurulumlar (cPanel/Passenger üretim) için.
+// Oturum yine sessions tablosu üzerinden kurulur; requireCatalogAdmin koruması aynen geçerli.
+const PASSWORD_LOGIN_MAX_ATTEMPTS = 5;
+const PASSWORD_LOGIN_WINDOW_MS = 10 * 60 * 1000;
+const failedLogins = new Map<string, { count: number; resetAt: number }>();
+
+const PasswordLoginBody = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+router.post('/auth/login', async (req: Request, res: Response) => {
+  const parsed = PasswordLoginBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'E-posta ve şifre gereklidir.' });
+    return;
+  }
+
+  const ip = (req.ip ?? req.socket.remoteAddress ?? 'bilinmeyen').toString();
+  const now = Date.now();
+  const attempt = failedLogins.get(ip);
+  if (attempt && attempt.resetAt > now && attempt.count >= PASSWORD_LOGIN_MAX_ATTEMPTS) {
+    res.status(429).json({ error: 'Çok fazla hatalı deneme. Lütfen 10 dakika sonra tekrar deneyin.' });
+    return;
+  }
+
+  const email = parsed.data.email.trim().toLowerCase();
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
+
+  if (
+    !user ||
+    !user.isActive ||
+    !user.passwordHash ||
+    !verifyPassword(parsed.data.password, user.passwordHash)
+  ) {
+    const entry = failedLogins.get(ip);
+    if (!entry || entry.resetAt <= now) {
+      failedLogins.set(ip, { count: 1, resetAt: now + PASSWORD_LOGIN_WINDOW_MS });
+    } else {
+      entry.count += 1;
+    }
+    res.status(401).json({ error: 'E-posta veya şifre hatalı.' });
+    return;
+  }
+
+  failedLogins.delete(ip);
+
+  const sessionUser: AuthUser = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileImageUrl: user.profileImageUrl,
+  };
+  const sid = await createSession({ user: sessionUser, access_token: '' });
+  setSessionCookie(res, sid);
+  await db
+    .update(usersTable)
+    .set({ lastLoginAt: new Date() })
+    .where(eq(usersTable.id, user.id));
+
+  res.json(GetCurrentAuthUserResponse.parse({ user: sessionUser }));
 });
 
 router.get('/login', async (req: Request, res: Response) => {

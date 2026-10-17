@@ -699,11 +699,39 @@ function Auth({ register = false }: { register?: boolean }) {
   return <div className="min-h-[100dvh] bg-sidebar text-sidebar-foreground"><div className="mx-auto grid min-h-[100dvh] max-w-7xl lg:grid-cols-[.9fr_1.1fr]"><div className="relative hidden overflow-hidden p-10 lg:block"><div className="absolute -left-36 top-20 h-96 w-96 rounded-full border border-white/10" /><div className="absolute left-20 top-56 h-64 w-64 rounded-full border border-primary/50" /><Link href="/" data-testid="link-auth-logo"><Logo dark /></Link><div className="absolute bottom-16 max-w-sm"><p className="eyebrow !text-red-400">RMS Rulmak B2B</p><h1 className="mt-5 font-display text-5xl font-semibold leading-tight">İşinizin ritmini birlikte koruyalım.</h1><p className="mt-5 text-sm leading-7 text-white/55">Size özel katalog, hızlı talep yönetimi ve RMS ekibiyle doğrudan iletişim.</p></div></div><div className="flex items-center bg-background p-5 md:p-12"><div className="mx-auto w-full max-w-md"><Link href="/" data-testid="link-auth-mobile-logo" className="lg:hidden"><Logo /></Link>{submitted ? <div data-testid="status-auth-success" className="py-10"><Check className="text-primary" size={34} /><h2 className="mt-6 font-display text-3xl font-semibold">Talebiniz alındı.</h2><p className="mt-3 leading-7 text-muted-foreground">{register ? 'Firma kaydınız inceleniyor. Ekibimiz doğrulama için sizinle iletişime geçecek.' : 'Giriş bilgileriniz kontrol ediliyor.'}</p><Link href="/" data-testid="link-auth-back" className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-primary">Ana sayfaya dön <ArrowRight size={15} /></Link></div> : <><p className="eyebrow mt-10 lg:mt-0">B2B portal</p><h2 className="mt-4 font-display text-4xl font-semibold">{register ? 'Firmanızı RMS ağına bağlayın.' : 'Tekrar hoş geldiniz.'}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{register ? 'Ürün taleplerini ve teknik iletişimi tek panelden yönetin.' : 'Hesabınıza giriş yaparak size özel deneyime devam edin.'}</p><form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="mt-8 space-y-4">{register && <input required data-testid="input-auth-company" placeholder="Firma adı *" className="field" />}<input required type={register ? 'text' : 'email'} data-testid="input-auth-identity" placeholder={register ? 'Yetkili adı *' : 'E-posta adresi *'} className="field" /><input required type="password" data-testid="input-auth-password" placeholder={register ? 'Şifre oluşturun *' : 'Şifreniz *'} className="field" />{register && <><input required type="email" data-testid="input-auth-email" placeholder="Kurumsal e-posta *" className="field" /><label className="flex items-start gap-2 text-xs text-muted-foreground"><input required type="checkbox" className="mt-0.5 accent-primary" /> KVKK ve üyelik koşullarını kabul ediyorum.</label></>}{!register && <div className="flex justify-end"><button type="button" data-testid="button-forgot-password" onClick={() => window.alert('Şifre yenileme bağlantısı e-posta adresinize gönderilecek.')} className="text-xs font-bold text-primary">Şifremi unuttum</button></div>}<button data-testid="button-auth-submit" className="w-full rounded-md bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground">{register ? 'Kayıt talebi gönder' : 'Giriş yap'}</button></form><p className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">{register ? 'Zaten hesabınız var mı?' : 'Henüz B2B hesabınız yok mu?'} <Link href={register ? '/b2b/giris' : '/b2b/kayit'} data-testid="link-auth-switch" className="font-bold text-primary">{register ? 'Giriş yapın' : 'Firma kaydı oluşturun'}</Link></p></>}</div></div></div></div>;
 }
 
+function AdminLogin() {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    const fd = new FormData(event.currentTarget);
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email: String(fd.get('email') || ''), password: String(fd.get('password') || '') }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || 'Giriş başarısız.');
+        window.location.href = '/admin';
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Giriş başarısız.');
+        setPending(false);
+      });
+  };
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-sidebar p-5 text-sidebar-foreground"><form onSubmit={submit} data-testid="form-admin-login" className="w-full max-w-sm rounded-xl border border-white/10 bg-background p-8"><Logo dark className="h-8" /><p className="eyebrow mt-8">Yönetim paneli</p><h1 className="mt-2 font-display text-2xl font-semibold">Yönetici girişi</h1><p className="mt-2 text-xs leading-5 text-muted-foreground">İçerik yönetimi için hesap e-postanız ve şifrenizle giriş yapın.</p><input required type="email" name="email" data-testid="input-admin-email" placeholder="E-posta *" className="field mt-6" autoComplete="username" /><input required type="password" name="password" data-testid="input-admin-password" placeholder="Şifre *" className="field mt-3" autoComplete="current-password" />{error && <p data-testid="status-admin-login-error" className="mt-3 text-sm text-red-500">{error}</p>}<button disabled={pending} data-testid="button-admin-login" className="mt-5 w-full rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">{pending ? 'Giriş yapılıyor…' : 'Giriş yap'}</button><Link href="/" data-testid="link-admin-login-home" className="mt-5 block text-center text-xs text-muted-foreground hover:text-white">← Genel siteye dön</Link></form></div>;
+}
+
 function PortalShell({ admin = false }: { admin?: boolean }) {
   const [location, setLocation] = useLocation();
   const summary = useGetDashboardSummary();
   const authUser = useGetCurrentAuthUser();
   const me = authUser.data?.user ?? undefined;
+  if (admin && !authUser.isLoading && !me) return <AdminLogin />;
   const nav = admin ? [['/admin', 'Genel bakış', Gauge], ['/admin/sliders', 'Hero sliderlar', ImageIcon], ['/admin/posts', 'Blog yazıları', FileText], ['/admin/brands', 'Markalar', Layers3], ['/admin/categories', 'Kategoriler', Filter], ['/admin/products', 'Ürünler', PackageSearch], ['/admin/sectors', 'Sektörler', Factory], ['/admin/sections', 'Site bölümleri', Cog], ['/admin/media', 'Medya kütüphanesi', ImageIcon], ['/admin/pages', 'Sayfalar', FileStack], ['/admin/inquiries', 'İletişim mesajları', Mail], ['/admin/redirects', 'Yönlendirmeler', Link2], ['/admin/users', 'Kullanıcılar', Users], ['/admin/menus', 'Menü yönetimi', Link2], ['/admin/settings', 'Site ayarları', Settings2], ['/admin/audit', 'Güvenlik & audit log', ShieldCheck]] : [['/b2b/panel', 'Genel bakış', Gauge], ['/urunler', 'Ürün kataloğu', PackageSearch], ['/iletisim', 'Teknik destek', Headphones]];
   const isActive = (href: string) => location === href || (href !== '/admin' && location.startsWith(href));
   const initials = me?.firstName?.charAt(0) || (admin ? 'R' : 'A');
