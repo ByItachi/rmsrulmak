@@ -135,10 +135,11 @@ function Header() {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [open]);
 
-  return <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-xl">
-    <div className="mx-auto flex h-[88px] max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
+  return <>
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[88px] max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
       <Link href="/" data-testid="link-home-logo" className="flex shrink-0 items-center gap-3"><Logo /></Link>
-      <button data-testid="button-mobile-menu" aria-label={open ? 'Menüyü kapat' : 'Menüyü aç'} aria-expanded={open} onClick={() => setOpen(!open)} className="rounded-lg p-2 text-foreground transition-colors hover:text-primary xl:hidden">{open ? <X size={22} /> : <Menu size={22} />}</button>
+      <button data-testid="button-mobile-menu" aria-label={open ? 'Menüyü kapat' : 'Menüyü aç'} aria-expanded={open} onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }} className="rounded-lg p-2 text-foreground transition-colors hover:text-primary xl:hidden">{open ? <X size={22} /> : <Menu size={22} />}</button>
       <nav className="hidden items-center gap-6 xl:flex">
         {navItems.slice(0, 2).map(([href, label]) => <Link key={href} href={href} data-testid={`link-nav-${label}`} className={`whitespace-nowrap rounded-md px-2 py-2 text-sm font-semibold transition-colors hover:text-primary ${location === href ? 'text-primary' : 'text-foreground'}`}>{label}</Link>)}
         <NavDropdown label="Kurumsal" href="/kurumsal" items={kurumsalMenu} active={location.startsWith('/kurumsal') || location === '/distributorler' || location === '/bizden-haberler' || location === '/galeri'} />
@@ -156,9 +157,10 @@ function Header() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </header>
     {open && <div className="fixed inset-0 z-50 bg-black/50 xl:hidden" data-testid="overlay-mobile-menu" onClick={() => setOpen(false)} />}
-    <aside aria-hidden={!open} className={`fixed inset-y-0 right-0 z-50 flex w-[290px] max-w-[85vw] flex-col border-l border-border bg-background shadow-2xl transition-transform duration-300 xl:hidden ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+    <aside aria-hidden={!open} inert={!open} className="fixed inset-y-0 right-0 z-50 flex w-[290px] max-w-[85vw] flex-col border-l border-border bg-background shadow-2xl transition-transform duration-300 will-change-transform xl:hidden" style={{ transform: open ? 'translateX(0)' : 'translateX(100%)' }}>
       <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-border px-5"><Logo /><button data-testid="button-mobile-menu-close" aria-label="Menüyü kapat" onClick={() => setOpen(false)} className="rounded-lg p-2 text-foreground hover:text-primary"><X size={22} /></button></div>
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
         {navItems.slice(0, 2).map(([href, label]) => <Link key={href} href={href} onClick={() => setOpen(false)} data-testid={`link-nav-${label}`} className={`rounded-lg px-4 py-3 text-base font-semibold transition-colors hover:bg-muted hover:text-primary ${location === href ? 'bg-muted text-primary' : 'text-foreground'}`}>{label}</Link>)}
@@ -175,7 +177,7 @@ function Header() {
         <Link href="/iletisim" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 rounded-md border border-border px-4 py-3 text-sm font-bold text-foreground">Bize Ulaşın <ArrowRight size={15} /></Link>
       </div>
     </aside>
-  </header>;
+  </>;
 }
 
 function Footer() {
