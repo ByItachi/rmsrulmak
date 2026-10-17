@@ -422,7 +422,7 @@ function ReferenceHeroSlider() {
     onMouseEnter={() => setPaused(true)}
     onMouseLeave={() => setPaused(false)}
   >
-    <div className="relative aspect-[4/3] w-full overflow-hidden min-[480px]:aspect-[3/2] sm:aspect-[2/1] lg:aspect-[2560/853]">
+    <div className="relative aspect-[3/2] w-full overflow-hidden sm:aspect-[2/1] lg:aspect-[2560/853]">
       {slides.map((item, index) => <Link
         key={item.image + String(index)}
         href={item.href}
