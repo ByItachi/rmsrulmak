@@ -431,16 +431,19 @@ function ReferenceHeroSlider() {
         tabIndex={active === index ? 0 : -1}
         className={`absolute inset-0 block transition-opacity duration-700 ${active === index ? 'z-10 opacity-100' : 'pointer-events-none opacity-0'}`}
       >
-        <img
-          src={item.image}
-          alt={item.label}
-          width={2560}
-          height={853}
-          className="h-full w-full object-cover"
-          loading={index === 0 ? 'eager' : 'lazy'}
-          fetchPriority={index === 0 ? 'high' : 'auto'}
-          decoding={index === 0 ? 'sync' : 'async'}
-        />
+        <picture>
+          {item.image.startsWith('/hero/') && <source media="(max-width: 639px)" srcSet={item.image.replace('/hero/', '/hero/mobile/')} />}
+          <img
+            src={item.image}
+            alt={item.label}
+            width={2560}
+            height={853}
+            className="h-full w-full object-cover"
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchPriority={index === 0 ? 'high' : 'auto'}
+            decoding={index === 0 ? 'sync' : 'async'}
+          />
+        </picture>
       </Link>)}
       <button
         type="button"
