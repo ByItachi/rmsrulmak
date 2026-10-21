@@ -22,6 +22,7 @@ let booted = false;
 let ga4Booted = false;
 let pixelBooted = false;
 let pageViewFired = false;
+let lastTrackedPath: string | null = null;
 
 function pushDataLayer(obj: unknown) {
   window.dataLayer = window.dataLayer ?? [];
@@ -52,6 +53,13 @@ export function initAnalytics(ids?: AnalyticsIds): void {
   if (!booted) {
     booted = true;
     window.dataLayer = window.dataLayer ?? [];
+    // gtag.js kuyrugu: resmi snippet'in tanimladigi gtag yardimcisi
+    window.gtag =
+      window.gtag ??
+      function (): void {
+        window.dataLayer = window.dataLayer ?? [];
+        (window.dataLayer as unknown[]).push(arguments);
+      };
     pushDataLayer({
       event: 'consent_init',
       ...consentModeFlags(loadConsent()),
@@ -93,12 +101,21 @@ export function initAnalytics(ids?: AnalyticsIds): void {
     window.fbq('init', PIXEL_ID);
     window.fbq('consent', loadConsent().ads ? 'grant' : 'revoke');
   }
+
+  // Ayarlar gec yuklendiyse ilk sayfa goruntulemesini tamamla (ayni yolda cift saymaz)
+  if (ids && GA4_ID && consentAllows('analytics') && !pageViewFired) {
+    trackPageView(window.location.pathname + window.location.search, document.title);
+  }
 }
 
 export function applyConsent(state: ConsentState): void {
   const flags = consentModeFlags(state);
   gtag('consent', 'update', flags);
   window.fbq?.('consent', state.ads ? 'grant' : 'revoke');
+  if (state.analytics) {
+    // Izin sonrasi sayfa goruntulemesini tamamla
+    trackPageView(window.location.pathname + window.location.search, document.title);
+  }
 }
 
 function consentAllows(kind: 'analytics' | 'ads'): boolean {
@@ -121,7 +138,9 @@ export function trackPageView(path: string, title: string): void {
   pushDataLayer({ event: 'page_view', page_path: path, page_title: title });
   if (GA4_ID && consentAllows('analytics')) {
     if (pageViewFired) {
+      if (path === lastTrackedPath) return;
       gtag('event', 'page_view', { page_path: path, page_title: title });
+      lastTrackedPath = path;
     } else {
       gtag('config', GA4_ID, {
         page_path: path,
@@ -129,6 +148,7 @@ export function trackPageView(path: string, title: string): void {
         send_page_view: true,
       });
       pageViewFired = true;
+      lastTrackedPath = path;
     }
   }
 }
