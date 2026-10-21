@@ -19,6 +19,8 @@ let GTM_ID = (import.meta.env.VITE_GTM_ID as string | undefined) ?? '';
 let PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | undefined) ?? '';
 
 let booted = false;
+let ga4Booted = false;
+let pixelBooted = false;
 let pageViewFired = false;
 
 function pushDataLayer(obj: unknown) {
@@ -41,19 +43,21 @@ function loadScript(src: string, id: string, extra?: { nonce?: string }) {
 }
 
 export function initAnalytics(ids?: AnalyticsIds): void {
-  if (booted) return;
-  booted = true;
   if (ids) {
     if (ids.ga4) GA4_ID = ids.ga4;
     if (ids.gtm) GTM_ID = ids.gtm;
     if (ids.pixel) PIXEL_ID = ids.pixel;
   }
 
-  window.dataLayer = window.dataLayer ?? [];
-  pushDataLayer({
-    event: 'consent_init',
-    ...consentModeFlags(loadConsent()),
-  });
+  if (!booted) {
+    booted = true;
+    window.dataLayer = window.dataLayer ?? [];
+    pushDataLayer({
+      event: 'consent_init',
+      ...consentModeFlags(loadConsent()),
+    });
+    wireGlobalEvents();
+  }
 
   // GTM: consent initializasyonunu her zaman ilet (script GTM_ID varsa yüklenir)
   if (GTM_ID) {
@@ -64,7 +68,8 @@ export function initAnalytics(ids?: AnalyticsIds): void {
   }
 
   // GA4: script ve config'i her zaman başlat; veri toplanması izinle denetlenir (Consent Mode)
-  if (GA4_ID) {
+  if (GA4_ID && !ga4Booted) {
+    ga4Booted = true;
     loadScript('https://www.googletagmanager.com/gtag/js?id=' + GA4_ID, 'ga4-script');
     gtag('js', new Date());
     gtag('config', GA4_ID, { send_page_view: false, anonymize_ip: true });
@@ -76,7 +81,8 @@ export function initAnalytics(ids?: AnalyticsIds): void {
   }
 
   // Meta Pixel: script yüklenir; izin yoksa "revoke"
-  if (PIXEL_ID) {
+  if (PIXEL_ID && !pixelBooted) {
+    pixelBooted = true;
     loadScript('https://connect.facebook.net/en_US/fbevents.js', 'meta-pixel-script');
     window.fbq =
       window.fbq ??
@@ -87,8 +93,6 @@ export function initAnalytics(ids?: AnalyticsIds): void {
     window.fbq('init', PIXEL_ID);
     window.fbq('consent', loadConsent().ads ? 'grant' : 'revoke');
   }
-
-  wireGlobalEvents();
 }
 
 export function applyConsent(state: ConsentState): void {
