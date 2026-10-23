@@ -8,8 +8,19 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    fbq?: (...args: unknown[]) => void;
+    fbq?: Fbq;
+    _fbq?: Fbq;
   }
+}
+
+/** Meta Pixel stub/fonksiyonu — resmi snippet seklinde kendi kuyrugunu tasiyan cagirilabilir nesne. */
+export interface Fbq {
+  (...args: unknown[]): void;
+  callMethod?: (...args: unknown[]) => void;
+  queue?: unknown[];
+  push?: Fbq;
+  loaded?: boolean;
+  version?: string;
 }
 
 export type AnalyticsIds = { ga4?: string; gtm?: string; pixel?: string };
@@ -88,18 +99,26 @@ export function initAnalytics(ids?: AnalyticsIds): void {
     });
   }
 
-  // Meta Pixel: script yüklenir; izin yoksa "revoke"
+  // Meta Pixel: resmi snippet stub'i — kuyruk, fbevents.js yuklenince kutuphane tarafindan tekrar oynatilir
   if (PIXEL_ID && !pixelBooted) {
     pixelBooted = true;
+    if (!window.fbq) {
+      const fbq = function (...args: unknown[]): void {
+        const f = window.fbq;
+        if (!f) return;
+        if (f.callMethod) f.callMethod(...args);
+        else f.queue?.push(args);
+      } as Fbq;
+      fbq.queue = [];
+      fbq.loaded = true;
+      fbq.version = '2.0';
+      window.fbq = fbq;
+      window._fbq = fbq;
+      (fbq as Fbq).push = fbq;
+    }
     loadScript('https://connect.facebook.net/en_US/fbevents.js', 'meta-pixel-script');
-    window.fbq =
-      window.fbq ??
-      function fbq(...args: unknown[]) {
-        const queue = window.dataLayer ?? [];
-        queue.push(['fbq', ...args]);
-      };
-    window.fbq('init', PIXEL_ID);
-    window.fbq('consent', loadConsent().ads ? 'grant' : 'revoke');
+    window.fbq?.('init', PIXEL_ID);
+    window.fbq?.('consent', loadConsent().ads ? 'grant' : 'revoke');
   }
 
   // Ayarlar gec yuklendiyse ilk sayfa goruntulemesini tamamla (ayni yolda cift saymaz)
