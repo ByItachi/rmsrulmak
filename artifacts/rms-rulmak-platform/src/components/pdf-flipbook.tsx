@@ -84,8 +84,17 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
           canvas.width = Math.floor(vp.width);
           canvas.height = Math.floor(vp.height);
           const ctx = canvas.getContext('2d')!;
-          await page.render({ canvasContext: ctx, viewport: vp }).promise;
-          rendered.push(canvas.toDataURL('image/jpeg', 0.82));
+          const renderTask = page.render({ canvasContext: ctx, viewport: vp });
+          try {
+            await Promise.race([
+              renderTask.promise,
+              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
+            ]);
+            rendered.push(canvas.toDataURL('image/jpeg', 0.82));
+          } catch {
+            try { renderTask.cancel(); } catch { /* ignore */ }
+            rendered.push(canvas.toDataURL('image/jpeg', 0.82));
+          }
           canvas.width = 0;
           canvas.height = 0;
           if (i % 10 === 0) await new Promise((r) => setTimeout(r, 50));
