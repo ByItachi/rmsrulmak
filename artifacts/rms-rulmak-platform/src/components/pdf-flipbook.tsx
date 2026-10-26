@@ -23,8 +23,29 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [bookKey, setBookKey] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<any>(null);
+  const aspectRef = useRef(1.3);
+
+  const computeSize = () => {
+    const aspect = aspectRef.current;
+    if (document.fullscreenElement === boxRef.current) {
+      const availW = window.innerWidth - 32;
+      const availH = window.innerHeight - 100;
+      let w = Math.floor(availW / 2);
+      let h = Math.round(w * aspect);
+      if (h > availH) {
+        h = Math.floor(availH);
+        w = Math.round(h / aspect);
+      }
+      return { w: Math.max(w, 240), h: Math.max(h, 280) };
+    }
+    const cw = boxRef.current?.clientWidth ?? Math.min(window.innerWidth - 48, 1200);
+    const w = Math.floor(Math.max(cw / 2, 240));
+    const h = Math.round(w * aspect);
+    return { w, h };
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -42,12 +63,9 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
         const doc = await pdfjsLib.getDocument({ url: src }).promise;
         const p1 = await doc.getPage(1);
         const v1 = p1.getViewport({ scale: 1 });
-        const aspect = v1.height / v1.width;
-        const cw = boxRef.current?.clientWidth ?? Math.min(window.innerWidth - 48, 1200);
-        const w = Math.floor(Math.max(cw / 2, 240));
-        const h = Math.round(w * aspect);
+        aspectRef.current = v1.height / v1.width;
         if (cancelled) return;
-        setSize({ w, h });
+        setSize(computeSize());
 
         const MAX_PAGES = 500;
         if (doc.numPages > MAX_PAGES) {
@@ -84,9 +102,18 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
 
   useEffect(() => {
     if (!boxRef.current) return;
-    const ro = new ResizeObserver(() => setBookKey((k) => k + 1));
+    const ro = new ResizeObserver(() => {
+      setSize((prev) => (prev ? computeSize() : prev));
+      setBookKey((k) => k + 1);
+    });
     ro.observe(boxRef.current);
-    return () => ro.disconnect();
+    const onFsChange = () => {
+      setIsFullscreen(document.fullscreenElement === boxRef.current);
+      setSize((prev) => (prev ? computeSize() : prev));
+      setBookKey((k) => k + 1);
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => { ro.disconnect(); document.removeEventListener('fullscreenchange', onFsChange); };
   }, []);
   void bookKey;
 
@@ -106,7 +133,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
   };
 
   return (
-    <div ref={boxRef} className="flex w-full flex-col items-center" data-testid="pdf-flipbook">
+    <div ref={boxRef} className={`flex w-full flex-col items-center ${isFullscreen ? 'justify-center bg-black py-4' : ''}`} data-testid="pdf-flipbook">
       {notice && <div className="mb-3 w-full rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-xs font-semibold text-amber-700">{notice}</div>}
       {error && <div className="w-full rounded-lg border border-red-200 bg-red-50 p-6 text-center text-sm font-semibold text-red-700">PDF yüklenemedi: {error}</div>}
       {!error && pages.length === 0 && (
@@ -122,7 +149,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
       )}
       {!error && size && pages.length > 0 && (
         <>
-          <div className="mb-3 flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
+          <div className={`mb-3 flex items-center gap-1 rounded-full border p-1 shadow-sm ${isFullscreen ? 'border-white/20 bg-white/10 text-white backdrop-blur [&_svg]:stroke-white [&_span]:text-white' : 'border-border bg-card'}`}>
             <button type="button" onClick={zoomOut} disabled={zoom <= ZOOM_MIN} aria-label="Uzaklaştır" data-testid="flip-zoom-out" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted disabled:opacity-40"><ZoomOut size={16} /></button>
             <span className="w-14 text-center text-xs font-bold text-foreground" data-testid="flip-zoom-label">%{Math.round(zoom * 100)}</span>
             <button type="button" onClick={zoomIn} disabled={zoom >= ZOOM_MAX} aria-label="Yakınlaştır" data-testid="flip-zoom-in" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted disabled:opacity-40"><ZoomIn size={16} /></button>
@@ -133,7 +160,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
             <button type="button" onClick={fullscreen} aria-label="Tam ekran" data-testid="flip-fullscreen" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Maximize size={16} /></button>
             <a href={src} download target="_blank" rel="noopener noreferrer" aria-label="PDF indir" data-testid="flip-download" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Download size={17} /></a>
           </div>
-          <div className="w-full overflow-auto" style={{ height: Math.round(size.h * zoom) + 44 }}>
+          <div className="w-full overflow-auto" style={{ height: Math.min(Math.round(size.h * zoom) + 44, isFullscreen ? window.innerHeight - 56 : Infinity) }}>
             <div style={{ width: size.w * 2 * zoom, height: size.h * zoom, transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
               <HTMLFlipBook
                 key={String(size.w) + '-' + String(size.h) + '-' + String(zoom)}

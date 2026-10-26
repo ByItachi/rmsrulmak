@@ -93,6 +93,26 @@ export const technicalCatalogBrands: CatalogBrandGroup[] = [
       { slug: 'rbc-14', title: 'RBC Aerospace Katalogları — Sayfa Grubu 14', image: '/catalog/rbc/0001.jpg', brandSlug: 'rbc' },
     ],
   },
+  {
+    slug: 'iko', name: 'IKO', items: [
+      { slug: 'iko-01', title: 'IKO İğneli Rulman Genel Kataloğu (Needle Roller Bearing Catalog)', image: '/catalog/iko/covers/iko-needle-roller-bearing-catalog.png', brandSlug: 'iko', file: '/catalog/iko/pdf/iko-needle-roller-bearing-catalog.pdf' },
+    ],
+  },
+  {
+    slug: 'jns', name: 'JNS', items: [
+      { slug: 'jns-01', title: 'JNS İğneli Rulman ve Kam Takipçisi Kataloğu', image: '/catalog/jns/covers/jns-needle-roller-bearing-catalog.png', brandSlug: 'jns', file: '/catalog/jns/pdf/jns-needle-roller-bearing-catalog.pdf' },
+    ],
+  },
+  {
+    slug: 'bower', name: 'Bower', items: [
+      { slug: 'bower-01', title: 'Bower Konik Masuralı Rulman Karşılaştırma Kataloğu (Taper Roller Bearing Interchange)', image: '/catalog/bower/covers/bower-taper-roller-bearing-interchange.png', brandSlug: 'bower', file: '/catalog/bower/pdf/bower-taper-roller-bearing-interchange.pdf' },
+    ],
+  },
+  {
+    slug: 'linmax', name: 'Linmax', items: [
+      { slug: 'linmax-01', title: 'Linmax Ürün Tanıtım Kataloğu', image: '/catalog/linmax/covers/linmax-urun-tanitimi.png', brandSlug: 'linmax', file: '/catalog/linmax/pdf/linmax-urun-tanitimi.pdf' },
+    ],
+  },
 ];
 
 export const companyProfileCatalog: CatalogItem = { slug: 'sirket-profili', title: 'RMS Rulmak Şirket Profili', image: '/catalog/sirket-profili.jpg', brandSlug: 'rms' };

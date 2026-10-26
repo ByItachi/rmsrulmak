@@ -50,7 +50,7 @@ function CatalogCard({ item, href }: { item: CatalogItem; href: string }) {
 export function EKatalogHome() {
   const sections = [
     { href: '/kataloglar/sirket-profili', title: 'Şirket Profili', desc: 'Kurumsal tanıtım sunumumuz ve şirket profilimiz.', icon: <Building2 size={22} /> },
-    { href: '/kataloglar/teknik-kataloglar', title: 'Teknik Kataloglar', desc: 'IDC, Gates, Dunlop, NTN, NSK, Timken, Schaeffler, Koyo ve RBC katalogları.', icon: <BookOpen size={22} /> },
+    { href: '/kataloglar/teknik-kataloglar', title: 'Teknik Kataloglar', desc: 'IDC, Gates, Dunlop, Linmax, NTN, NSK, Timken, Schaeffler, Koyo, IKO, JNS, RBC ve Bower katalogları.', icon: <BookOpen size={22} /> },
     { href: '/kataloglar/brosurler', title: 'Broşürler', desc: 'Ürün gruplarımıza ait güncel broşür ve dökümanlar.', icon: <Images size={22} /> },
   ];
   return <>
