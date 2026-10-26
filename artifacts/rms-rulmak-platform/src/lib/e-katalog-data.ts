@@ -65,7 +65,7 @@ export const technicalCatalogBrands: CatalogBrandGroup[] = [
   },
   {
     slug: 'koyo', name: 'Koyo', items: [
-      { slug: 'koyo-01', title: 'KOYO Genel Rulman Kataloğu (Ball & Roller Bearings)', image: '/catalog/koyo/covers/catbs008en.png', brandSlug: 'koyo', file: '/catalog/koyo/pdf/catbs008en.pdf' },
+      { slug: 'koyo-01', title: 'KOYO Genel Rulman Kataloğu (Ball & Roller Bearings)', image: '/catalog/koyo/covers/catbs007en.png', brandSlug: 'koyo', file: '/catalog/koyo/pdf/catbs007en.pdf' },
       { slug: 'koyo-02', title: 'JTKB1023EX Rulman Kataloğu (LFT-Series)', image: '/catalog/koyo/covers/catb1023ex.png', brandSlug: 'koyo', file: '/catalog/koyo/pdf/catb1023ex.pdf' },
       { slug: 'koyo-03', title: 'JTBA005EN Rulman Kataloğu', image: '/catalog/koyo/covers/catba005en.png', brandSlug: 'koyo', file: '/catalog/koyo/pdf/catba005en.pdf' },
       { slug: 'koyo-04', title: 'JTSB001EN Rulman Kataloğu (İnç Serisi Konik Masuralı)', image: '/catalog/koyo/covers/catbs001en.png', brandSlug: 'koyo', file: '/catalog/koyo/pdf/catbs001en.pdf' },
