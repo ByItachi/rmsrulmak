@@ -246,6 +246,6 @@ export function TechnicalDetail() {
   <main className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
     <Link href="/teknik" data-testid="link-back-technical" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary">← Tüm teknik konular</Link>
     <div className="mt-8">{topic.render()}</div>
-    <div className="mt-14 rounded-xl bg-muted p-7 md:flex md:items-center md:justify-between"><div><p className="eyebrow">Uygulamanıza özel destek</p><p className="mt-2 text-sm text-muted-foreground">Teknik ekibimiz, projenize özgü hesap ve seçim konusunda size yardımcı olabilir.</p></div><Link href="/iletisim" data-testid="link-technical-contact" className="mt-5 inline-flex items-center gap-2 text-sm font-bold md:mt-0">Ekibe danışın <ArrowRight size={15} className="text-primary" /></Link></div>
+    <div className="mt-14 rounded-xl bg-muted p-7 md:flex md:items-center md:justify-between"><div><p className="eyebrow">Doğru ürünü birlikte seçelim</p><p className="mt-2 max-w-xl text-sm text-muted-foreground">Uygulamanıza, çalışma koşullarınıza ve teknik gereksinimlerinize uygun ürünü belirlemek için bizimle iletişime geçin.</p></div><a href="https://wa.me/905010624041?text=Merhaba%2C+teknik+se%C3%A7im+konusunda+destek+almak+istiyorum." target="_blank" rel="noopener noreferrer" data-testid="link-technical-whatsapp" className="mt-5 inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground md:mt-0">WhatsApp ile danışın <ArrowRight size={15} /></a></div>
   </main></>;
 }
