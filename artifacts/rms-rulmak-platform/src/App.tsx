@@ -363,28 +363,28 @@ function ProductVisual({ src, name }: { src?: string; name: string }) {
 }
 
 const referenceSlides = [
-  { image: '/hero/slide-koyo.jpg', label: 'Koyo Japon teknolojisi rulmanları', href: '/kataloglar/teknik/koyo' },
-  { image: '/hero/slide-nsk.jpg', label: 'Japon hassasiyetinde NSK mükemmeliyeti', href: '/kataloglar/teknik/nsk' },
-  { image: '/hero/slide-schaeffler.jpg', label: 'Alman mühendisliğinde mükemmellik', href: '/kataloglar/teknik/schaeffler' },
-  { image: '/hero/slide-gates.jpg', label: 'Gates ile endüstriyel güç aktarımı', href: '/kataloglar/teknik/gates' },
-  { image: '/hero/slide-ntn.jpg', label: 'Japon mühendisliğinde güven ve verimlilik', href: '/kataloglar/teknik/ntn' },
-  { image: '/hero/slide-timken.jpg', label: 'Konik rulmanlarla endüstriyel güç', href: '/kataloglar/teknik/timken' },
+  { image: '/hero/slide-koyo.jpg', label: 'Koyo Japon teknolojisi rulmanları', href: '/kataloglar/teknik-kataloglar' },
+  { image: '/hero/slide-nsk.jpg', label: 'Japon hassasiyetinde NSK mükemmeliyeti', href: '/kataloglar/teknik-kataloglar' },
+  { image: '/hero/slide-schaeffler.jpg', label: 'Alman mühendisliğinde mükemmellik', href: '/kataloglar/teknik-kataloglar' },
+  { image: '/hero/slide-gates.jpg', label: 'Gates ile endüstriyel güç aktarımı', href: '/kataloglar/teknik-kataloglar' },
+  { image: '/hero/slide-ntn.jpg', label: 'Japon mühendisliğinde güven ve verimlilik', href: '/kataloglar/teknik-kataloglar' },
+  { image: '/hero/slide-timken.jpg', label: 'Konik rulmanlarla endüstriyel güç', href: '/kataloglar/teknik-kataloglar' },
 ] as const;
 
 const referenceBrands = [
-  { name: 'Gates', image: '/brand/reference/gates-logo.jpg', href: '/kataloglar/teknik/gates' },
-  { name: 'IDC', image: '/brand/reference/idc-logo.jpg', href: '/kataloglar/teknik/idc' },
-  { name: 'Dunlop', image: '/brand/reference/dunlop-logo.jpg', href: '/kataloglar/teknik/dunlop' },
-  { name: 'NTN', image: '/brand/reference/ntn-logo.jpg', href: '/kataloglar/teknik/ntn' },
-  { name: 'NSK', image: '/brand/reference/nsk-logo.jpg', href: '/kataloglar/teknik/nsk' },
-  { name: 'Timken', image: '/brand/reference/timken-logo.jpg', href: '/kataloglar/teknik/timken' },
-  { name: 'Schaeffler', image: '/brand/reference/schaeffler-logo.jpg', href: '/kataloglar/teknik/schaeffler' },
-  { name: 'Koyo', image: '/brand/reference/koyo-logo.jpg', href: '/kataloglar/teknik/koyo' },
-  { name: 'RBC', image: '/brand/reference/rbc-logo.jpg', href: '/kataloglar/teknik/rbc' },
-  { name: 'Linmax', image: '/brand/reference/linmax-logo.jpg', href: '/kataloglar/teknik/linmax' },
-  { name: 'IKO', image: '/brand/reference/iko-logo.jpg', href: '/kataloglar/teknik/iko' },
-  { name: 'JNS', image: '/brand/reference/jns-logo.jpg', href: '/kataloglar/teknik/jns' },
-  { name: 'Bower', image: '/brand/reference/bower-logo.jpg', href: '/kataloglar/teknik/bower' },
+  { name: 'Gates', image: '/brand/reference/gates-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'IDC', image: '/brand/reference/idc-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Dunlop', image: '/brand/reference/dunlop-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'NTN', image: '/brand/reference/ntn-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'NSK', image: '/brand/reference/nsk-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Timken', image: '/brand/reference/timken-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Schaeffler', image: '/brand/reference/schaeffler-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Koyo', image: '/brand/reference/koyo-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'RBC', image: '/brand/reference/rbc-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Linmax', image: '/brand/reference/linmax-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'IKO', image: '/brand/reference/iko-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'JNS', image: '/brand/reference/jns-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
+  { name: 'Bower', image: '/brand/reference/bower-logo.jpg', href: '/kataloglar/teknik-kataloglar' },
 ] as const;
 
 function ReferenceHeroSlider() {
@@ -541,8 +541,8 @@ function Home() {
       </section>
       <section className="relative overflow-hidden bg-sidebar text-sidebar-foreground"><div className="shell-grid absolute inset-0 opacity-20" /><div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-4 lg:px-8"><CountUpStat value={1990} label="Kuruluş, üç kuşak aile şirketi" icon={Landmark} /><CountUpStat value={30} label="Türkiye'de Gates'in tek temsilcisi" icon={ShieldCheck} /><CountUpStat value={18} label="Global marka, tek kaynak" icon={Layers3} /><CountUpStat value={4000} label="Sanayi müşterisi" icon={Factory} /></div><p className="relative mx-auto max-w-7xl px-5 pb-10 text-xs font-bold uppercase tracking-wider text-white/50 lg:px-8">Timken ve NTN'yi Türkiye'ye ilk getiren firma · Schaeffler grubu ürünlerinde 60 yıllık ithalat tecrübesi</p></section>
       <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24"><div className="grid gap-10 md:grid-cols-2">
-        <div><h2 className="font-display text-2xl font-semibold">Resmi distribütörlüklerimiz</h2><div className="mt-6 grid grid-cols-2 gap-4">{homeDistributorBrands.map((b) => <Link key={b.id} href={`/urunler?brand=${b.slug}`} className="relative rounded-lg border border-border bg-card p-5 text-center transition hover:border-primary"><span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-foreground">Resmi Distribütör</span>{b.logoUrl ? <img src={b.logoUrl} alt={b.name} width={1000} height={300} className="mx-auto mt-2 h-10 w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} /> : null}<span className={`mt-2 block font-display text-lg font-semibold ${b.logoUrl ? 'hidden' : ''}`}>{b.name}</span></Link>)}</div></div>
-        <div><h2 className="font-display text-2xl font-semibold">Doğrudan ithalat</h2><div className="mt-6 grid grid-cols-3 gap-4">{homeImportBrands.map((b) => <Link key={b.id} href={`/urunler?brand=${b.slug}`} className="rounded-lg border border-border bg-card p-4 text-center transition hover:border-primary">{b.logoUrl ? <img src={b.logoUrl} alt={b.name} width={1000} height={300} className="mx-auto h-8 w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} /> : null}<span className={`block font-display text-sm font-semibold ${b.logoUrl ? 'hidden' : ''}`}>{b.name}</span></Link>)}</div></div>
+        <div><h2 className="font-display text-2xl font-semibold">Resmi distribütörlüklerimiz</h2><div className="mt-6 grid grid-cols-2 gap-4">{homeDistributorBrands.map((b) => <Link key={b.id} href="/kataloglar/teknik-kataloglar" className="relative rounded-lg border border-border bg-card p-5 text-center transition hover:border-primary"><span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-foreground">Resmi Distribütör</span>{b.logoUrl ? <img src={b.logoUrl} alt={b.name} width={1000} height={300} className="mx-auto mt-2 h-10 w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} /> : null}<span className={`mt-2 block font-display text-lg font-semibold ${b.logoUrl ? 'hidden' : ''}`}>{b.name}</span></Link>)}</div></div>
+        <div><h2 className="font-display text-2xl font-semibold">Doğrudan ithalat</h2><div className="mt-6 grid grid-cols-3 gap-4">{homeImportBrands.map((b) => <Link key={b.id} href="/kataloglar/teknik-kataloglar" className="rounded-lg border border-border bg-card p-4 text-center transition hover:border-primary">{b.logoUrl ? <img src={b.logoUrl} alt={b.name} width={1000} height={300} className="mx-auto h-8 w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} /> : null}<span className={`block font-display text-sm font-semibold ${b.logoUrl ? 'hidden' : ''}`}>{b.name}</span></Link>)}</div></div>
       </div><Link href="/markalar" data-testid="link-home-all-brands" className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-primary">Tüm markalar <ArrowRight size={16} /></Link></section>
       <section className="mx-auto grid max-w-7xl gap-9 px-5 py-16 lg:grid-cols-[.8fr_1.6fr] lg:px-8 lg:py-24"><div><p className="eyebrow">Neden Rulmak?</p><h2 className="industrial-rule mt-4 max-w-sm font-display text-4xl font-semibold leading-tight">Parçadan fazlası. Sürekliliğin ortağı.</h2></div><div className="grid gap-8 sm:grid-cols-2">{([['Tek kaynak', ShieldCheck, '18 global marka, rulmandan kayışa tek tedarikçi.'], ['Güçlü stok', Sparkles, 'Tuzla deposundan hızlı teslimat, minimum duruş.'], ['Teknik destek', Users, 'Doğru ürün seçimi, muadil ve çapraz referans.'], ['Aile şirketi güveni', Landmark, "1990'dan bu yana üç kuşak, uzun vadeli ortaklık."]] as [string, typeof Gauge, string][]).map(([title, Icon, text]) => <div key={title} className="lift rounded-xl border border-border bg-card p-6"><Icon className="text-primary" /><h3 className="mt-7 font-display text-xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{text}</p></div>)}</div></section>
       <section className="relative overflow-hidden bg-sidebar text-sidebar-foreground"><div className="shell-grid absolute inset-0 opacity-20" /><div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-4 lg:px-8">{summaryQuery.isLoading ? <div className="col-span-full h-12 animate-pulse rounded bg-white/15" /> : summaryQuery.isError ? <p className="col-span-full text-sm text-white/75">Katalog özeti şu an kullanılamıyor.</p> : <><CountUpStat value={summary?.productCount ?? 0} label="Ürün kaydı" icon={PackageSearch} /><CountUpStat value={summary?.brandCount ?? 0} label="Güvenilir marka" icon={Layers3} /><CountUpStat value={summary?.categoryCount ?? 0} label="Ürün kategorisi" icon={Filter} /><CountUpStat value={summary?.sectorCount ?? 0} label="Sektörel çözüm" icon={Factory} /></>}</div></section>
@@ -627,7 +627,8 @@ function DirectoryPage({ kind }: { kind: 'brand' | 'category' }) {
 function DirectoryCard({ item, kind, badge }: { item: Brand | Category; kind: 'brand' | 'category'; badge?: string }) {
   const isBrand = kind === 'brand';
   const hasLogo = isBrand && 'logoUrl' in item && !!item.logoUrl;
-  return <Link href={`/urunler?${isBrand ? 'brand' : 'category'}=${item.slug}`} data-testid={`card-${kind}-${item.id}`} aria-label={`${item.name} ${isBrand ? 'markasını' : 'kategorisini'} incele`} className="lift group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+  const href = isBrand ? '/kataloglar/teknik-kataloglar' : `/urunler?category=${item.slug}`;
+  return <Link href={href} data-testid={`card-${kind}-${item.id}`} aria-label={`${item.name} ${isBrand ? 'markasını' : 'kategorisini'} incele`} className="lift group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
     {badge && <span className="absolute right-4 top-4 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">{badge}</span>}
     {hasLogo ? <div className="flex items-start justify-between"><div className="flex h-28 w-full max-w-[75%] items-center justify-start overflow-hidden rounded-lg bg-white p-2"><img src={(item as Brand).logoUrl} alt={item.name} width={1000} height={300} className="h-full w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>{!badge && <ArrowUpRightIcon />}</div> : <div className="flex items-start justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-lg bg-muted text-primary">{isBrand ? <Layers3 size={20} /> : <Factory size={20} />}</span>{!badge && <ArrowUpRightIcon />}</div>}
     <h2 className="mt-8 font-display text-2xl font-semibold group-hover:text-primary">{item.name}</h2><p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p>
