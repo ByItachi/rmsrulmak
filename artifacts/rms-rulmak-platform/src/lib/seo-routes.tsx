@@ -8,20 +8,20 @@ const P = (suffix: string) => `RMS Rulmak — ${suffix}`;
 
 const staticMeta: Record<string, RouteMeta> = {
   '/': {
-    title: P('Rulman ve Güç Aktarım Sistemlerinde Endüstriyel Güven'),
+    title: P('Rulman ve Güç Aktarım Çözümleri'),
     description:
-      'RMS Rulmak; endüstriyel rulman, kayış, kasnak ve güç aktarım ürünlerinde IDC, Gates, Dunlop, NTN, NSK, Timken, Schaeffler, Koyo ve RBC Bearings markalarının Türkiye distribütörlüğünü sunar.',
+      "RMS Rulmak; Gates, IDC, Dunlop ve Linmax'ın resmi distribütörü, 18 global markada rulman ve güç aktarım ürünleri. 1990'dan beri sanayinin yanında.",
     type: 'website',
   },
   '/urunler': {
-    title: P('Ürünler – Endüstriyel Rulman ve Güç Aktarım Ürünleri'),
+    title: P('Rulman, Kayış ve Güç Aktarım Ürünleri'),
     description:
       'Bilyalı, konik, masuralı ve iğneli rulmanlar; V-kayış, zincir dişlisi ve güç aktarım ekipmanları. Ürün kodlarıyla arayın, teknik özellikleri inceleyin.',
   },
   '/markalar': {
-    title: P('Markalar – Yetkili Distribütörlük Portföyümüz'),
+    title: P('Markalar – Resmi Distribütörlük ve Doğrudan İthalat'),
     description:
-      'IDC, Gates, Dunlop, NTN, NSK, Timken, Schaeffler (FAG/INA), Koyo ve RBC Bearings markalarının yetkili distribütörlüğü.',
+      "Gates, IDC, Dunlop ve Linmax'ın Türkiye resmi distribütörüyüz; Schaeffler, NSK, NTN, Timken, Koyo, IKO, JNS, RBC ve Bower'ı doğrudan ithal ediyoruz.",
   },
   '/kategoriler': {
     title: P('Kategoriler – Ürün Grupları'),
@@ -40,22 +40,22 @@ const staticMeta: Record<string, RouteMeta> = {
     description: 'Rulman ve güç aktarım ürünleri için PDF dokümanları ve katalog arşivi.',
   },
   '/sektorler': {
-    title: P('Sektörler – Endüstriyel Çözümler'),
+    title: P('Sektörel Rulman ve Güç Aktarım Çözümleri'),
     description:
-      'Demir-çelik, madencilik, kâğıt, çimento ve daha fazlası için sektöre özel rulman ve güç aktarım çözümleri.',
+      'Demir-çelik, madencilik, savunma, petrokimya, enerji, çimento, tekstil, havacılık, CNC ve tarım için sektöre özel rulman ve güç aktarım çözümleri.',
   },
   '/kurumsal': {
-    title: P('Kurumsal – Hakkımızda, Tarihçemiz, Misyon ve Vizyon'),
+    title: P('Hakkımızda'),
     description:
-      'RMS Rulmak hakkında: tarihçemiz, misyon, vizyon, ilkelerimiz ve distribütörlük ağımız.',
+      "1990'dan bu yana rulman ve güç aktarım ürünlerinde faaliyet gösteren, üçüncü kuşak tarafından yönetilen bağımsız bir aile şirketiyiz. Tarihçemiz, misyon, vizyon ve ilkelerimiz.",
   },
   '/teknik': {
-    title: P('Teknik Bilgiler – Mühendislik Rehberleri'),
+    title: P('Teknik Bilgiler ve Hesaplama Araçları'),
     description:
       'Rulman ömrü hesabı, iç boşluk, gresler, arıza teşhisi, kayış-kasnak hesabı, toleranslar ve mühendislik formülleri.',
   },
   '/blog': {
-    title: P('Blog – Teknik Notlar ve Haberler'),
+    title: P('Teknik Yazılar ve Rehberler'),
     description: 'Rulman seçimi, bakım, kestirimci bakım ve endüstriyel haberler.',
   },
   '/bizden-haberler': {
