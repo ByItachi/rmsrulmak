@@ -110,9 +110,10 @@ function Header() {
     ['/urunler', 'Ürünler'], ['/markalar', 'Markalar'], ['/kurumsal', 'Kurumsal'], ['/teknik', 'Teknik'],
     ['/kategoriler', 'Kategoriler'], ['/sektorler', 'Sektörler'], ['/blog', 'Blog'], ['/iletisim', 'İletişim'],
   ];
-  const navItems = mainMenu?.items?.length
+  const navItems = (mainMenu?.items?.length
     ? mainMenu.items.map((i) => [i.href, i.label] as const)
-    : systemNav;
+    : systemNav
+  ).filter(([, label]) => label !== 'Kurumsal' && label !== 'Teknik');
   const korpItems = (mainMenu?.items?.find((i) => i.label === 'Kurumsal')?.children ?? []).map((c) => [c.href, c.label] as const);
   const tekItems = (mainMenu?.items?.find((i) => i.label === 'Teknik')?.children ?? []).map((c) => [c.href, c.label] as const);
   const kurumsalMenu: readonly (readonly [string, string])[] = korpItems.length ? korpItems : [
@@ -601,15 +602,28 @@ function ProductRequestModal({ product, onClose, onSubmit, pending }: { product:
 function DirectoryPage({ kind }: { kind: 'brand' | 'category' }) {
   const query = kind === 'brand' ? useListBrands() : useListCategories();
   const items = query.data ?? [];
-  return <Shell><PageIntro eyebrow={kind === 'brand' ? 'Marka portföyü' : 'Ürün aileleri'} title={kind === 'brand' ? 'Doğru markayla, doğru uygulama.' : 'İhtiyacınızı doğru kategoride bulun.'} description={kind === 'brand' ? 'Endüstriyel uygulamalarda güven veren üreticileri ve ürün gruplarını tek bir teknik arşivde buluşturuyoruz.' : 'Rulman, güç aktarımı ve hareket bileşenlerini kullanım amacına göre keşfedin.'} /><main className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">{query.isLoading ? <LoadingState /> : query.isError ? <ErrorState onRetry={() => query.refetch()} /> : items.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{items.map((item) => <DirectoryCard key={item.id} item={item} kind={kind} />)}</div> : <EmptyState />}</main></Shell>;
+  const distributorBrands = kind === 'brand' ? (items as Brand[]).filter((b) => b.partnerType === 'distributor') : [];
+  const importBrands = kind === 'brand' ? (items as Brand[]).filter((b) => b.partnerType !== 'distributor') : [];
+  return <Shell><PageIntro eyebrow={kind === 'brand' ? 'Marka portföyü' : 'Ürün aileleri'} title={kind === 'brand' ? 'Markalarımız' : 'İhtiyacınızı doğru kategoride bulun.'} description={kind === 'brand' ? `${items.length} global marka, tek kaynak. Resmi distribütörlüklerimiz ve doğrudan ithalatımızla doğru ürünü, orijinal haliyle sunuyoruz.` : 'Rulman, güç aktarımı ve hareket bileşenlerini kullanım amacına göre keşfedin.'} /><main className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+    {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState onRetry={() => query.refetch()} /> : items.length ? (
+      kind === 'brand' ? <div className="space-y-14">
+        {distributorBrands.length > 0 && <div><h2 className="font-display text-2xl font-semibold">Resmi Distribütörlüklerimiz</h2><p className="mt-2 text-sm text-muted-foreground">Türkiye'de yetkili distribütörü olduğumuz markalar.</p><div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{distributorBrands.map((item) => <DirectoryCard key={item.id} item={item} kind={kind} />)}</div></div>}
+        {importBrands.length > 0 && <div><h2 className="font-display text-2xl font-semibold">Doğrudan İthalat</h2><p className="mt-2 text-sm text-muted-foreground">Dünya çapında güvenilir üreticilerden doğrudan ithal ettiğimiz markalar.</p><div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{importBrands.map((item) => <DirectoryCard key={item.id} item={item} kind={kind} />)}</div></div>}
+      </div> : <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{items.map((item) => <DirectoryCard key={item.id} item={item} kind={kind} />)}</div>
+    ) : <EmptyState />}
+  </main></Shell>;
 }
 
 function DirectoryCard({ item, kind }: { item: Brand | Category; kind: 'brand' | 'category' }) {
   const isBrand = kind === 'brand';
   const hasLogo = isBrand && 'logoUrl' in item && !!item.logoUrl;
-  return <Link href={`/urunler?${isBrand ? 'brand' : 'category'}=${item.slug}`} data-testid={`card-${kind}-${item.id}`} className="lift group relative overflow-hidden rounded-xl border border-border bg-card p-6">
-    {hasLogo ? <div className="flex items-start justify-between"><div className="flex h-28 w-full max-w-[75%] items-center justify-start overflow-hidden rounded-lg bg-white p-2"><img src={(item as Brand).logoUrl} alt={item.name} width={1000} height={300} className="h-full w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" /></div><ArrowUpRightIcon /></div> : <div className="flex items-start justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-lg bg-muted text-primary">{isBrand ? <Layers3 size={20} /> : <Factory size={20} />}</span><ArrowUpRightIcon /></div>}
-    <h2 className="mt-8 font-display text-2xl font-semibold group-hover:text-primary">{item.name}</h2><p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p><div className="mt-6 border-t border-border pt-4 text-xs font-bold uppercase tracking-wider text-primary">{item.productCount} ürün</div>
+  return <Link href={`/urunler?${isBrand ? 'brand' : 'category'}=${item.slug}`} data-testid={`card-${kind}-${item.id}`} aria-label={`${item.name} ${isBrand ? 'markasını' : 'kategorisini'} incele`} className="lift group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+    {hasLogo ? <div className="flex items-start justify-between"><div className="flex h-28 w-full max-w-[75%] items-center justify-start overflow-hidden rounded-lg bg-white p-2"><img src={(item as Brand).logoUrl} alt={item.name} width={1000} height={300} className="h-full w-full object-contain" style={{ mixBlendMode: 'multiply' }} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div><ArrowUpRightIcon /></div> : <div className="flex items-start justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-lg bg-muted text-primary">{isBrand ? <Layers3 size={20} /> : <Factory size={20} />}</span><ArrowUpRightIcon /></div>}
+    <h2 className="mt-8 font-display text-2xl font-semibold group-hover:text-primary">{item.name}</h2><p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.description}</p>
+    <div className="mt-auto flex items-center justify-between pt-6">
+      {item.productCount > 0 && <span className="text-xs font-bold uppercase tracking-wider text-primary">{item.productCount} ürün</span>}
+      <span className="ml-auto text-xs font-bold uppercase tracking-wider text-foreground transition-colors group-hover:text-primary">{isBrand ? 'Markayı İncele' : 'Kategoriyi İncele'}</span>
+    </div>
   </Link>;
 }
 
@@ -655,7 +669,7 @@ function Corporate() {
   const sectionsQuery = useListSiteSections();
   const statsMap = Object.fromEntries((sectionsQuery.data ?? []).map((s) => [s.key, s]));
   return <Shell><PageIntro eyebrow="RMS Rulmak" title="Güven, teknik bilgiyle başlar." description="Rulmak; rulman ve güç aktarımı alanında, müşterilerinin operasyonel sürekliliğini odağına alan bir çözüm ortağıdır." /><main>
-    <section className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-8 lg:py-24"><div><p className="eyebrow">Biz kimiz?</p><h2 className="industrial-rule mt-4 font-display text-4xl font-semibold">1999'dan beri sahadaki ihtiyacı dinliyoruz.</h2></div><div className="space-y-5 text-base leading-8 text-muted-foreground"><p>1999 yılından bu yana rulman ve güç aktarım ekipmanları alanında faaliyet gösteren RMS Rulmak; IDC, Gates, Dunlop, NTN, NSK, Timken, Schaeffler (FAG / INA), Koyo ve RBC Bearings gibi global markaların Türkiye'deki yetkili distribütörlüğünü ve bayiliğini yürütür. Her uygulamanın kendi dili, yükü ve çalışma koşulu vardır; biz bu detayları dinler, ürün seçimini yalnızca katalogdan değil sahadaki gerçek ihtiyaçtan kurarız.</p><p>Teknik ürün bilgisi ile insan ilişkisini aynı masada buluşturuyoruz. B2B müşterilerimiz için hızlı erişilen bir katalog, şeffaf iletişim ve tekrar tekrar güvenebilecekleri bir çalışma biçimi sunuyoruz.</p><div className="grid gap-6 border-t border-border pt-8 sm:grid-cols-3"><Stat value="1999" label="Kuruluş yılı" icon={Gauge} /><Stat value="9" label="Dünya markası" icon={BarChart3} /><Stat value="TR" label="Yerel uzmanlık" icon={MapPin} /></div></div></section>
+    <section className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-8 lg:py-24"><div><p className="eyebrow">Biz kimiz?</p><h2 className="industrial-rule mt-4 font-display text-4xl font-semibold">1999'dan beri sahadaki ihtiyacı dinliyoruz.</h2></div><div className="space-y-5 text-base leading-8 text-muted-foreground"><p>1999 yılından bu yana rulman ve güç aktarım ekipmanları alanında faaliyet gösteren RMS Rulmak; Gates, IDC, Dunlop ve Linmax markalarının Türkiye'deki resmi distribütörlüğünü yürütürken; Schaeffler (FAG / INA), Timken, NTN, NSK, Koyo, IKO, JNS, RBC Bearings ve Bower gibi global markaları da doğrudan ithal ederek sektöre sunar. Her uygulamanın kendi dili, yükü ve çalışma koşulu vardır; biz bu detayları dinler, ürün seçimini yalnızca katalogdan değil sahadaki gerçek ihtiyaçtan kurarız.</p><p>Teknik ürün bilgisi ile insan ilişkisini aynı masada buluşturuyoruz. B2B müşterilerimiz için hızlı erişilen bir katalog, şeffaf iletişim ve tekrar tekrar güvenebilecekleri bir çalışma biçimi sunuyoruz.</p><div className="grid gap-6 border-t border-border pt-8 sm:grid-cols-3"><Stat value="1999" label="Kuruluş yılı" icon={Gauge} /><Stat value="13" label="Dünya markası" icon={BarChart3} /><Stat value="TR" label="Yerel uzmanlık" icon={MapPin} /></div></div></section>
     <section id="tarihce" className="scroll-mt-28 border-y border-border bg-background"><div className="mx-auto max-w-7xl px-5 py-16 lg:px-8"><p className="eyebrow">Tarihçemiz</p><h2 className="industrial-rule mt-4 font-display text-3xl font-semibold">Yol haritası: yıllar içinde büyüyen bir güven ağı.</h2><p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">Kuruluşumuzdan bugüne uzanan kilometre taşlarımız.</p>
       <div className="relative mt-16">
         <span aria-hidden="true" className="absolute bottom-4 left-[19px] top-1 w-px bg-gradient-to-b from-primary via-primary/45 to-border lg:bottom-auto lg:left-0 lg:right-[52px] lg:top-[19px] lg:h-px lg:w-auto lg:bg-gradient-to-r" />

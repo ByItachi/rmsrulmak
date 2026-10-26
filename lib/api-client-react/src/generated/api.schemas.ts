@@ -147,6 +147,8 @@ export interface Brand {
   name: string;
   description: string;
   logoUrl: string;
+  position: number;
+  partnerType: string;
   productCount: number;
 }
 
@@ -277,8 +279,18 @@ export interface AdminBrand {
   name: string;
   description: string;
   logoUrl: string;
+  position: number;
+  partnerType: string;
   productCount: number;
 }
+
+export type BrandInputPartnerType = typeof BrandInputPartnerType[keyof typeof BrandInputPartnerType];
+
+
+export const BrandInputPartnerType = {
+  distributor: 'distributor',
+  import: 'import',
+} as const;
 
 export interface BrandInput {
   /** @maxLength 80 */
@@ -292,7 +304,17 @@ export interface BrandInput {
   description?: string;
   /** @maxLength 500 */
   logoUrl?: string;
+  position?: number;
+  partnerType?: BrandInputPartnerType;
 }
+
+export type BrandUpdatePartnerType = typeof BrandUpdatePartnerType[keyof typeof BrandUpdatePartnerType];
+
+
+export const BrandUpdatePartnerType = {
+  distributor: 'distributor',
+  import: 'import',
+} as const;
 
 export interface BrandUpdate {
   /** @maxLength 80 */
@@ -306,6 +328,8 @@ export interface BrandUpdate {
   description?: string;
   /** @maxLength 500 */
   logoUrl?: string;
+  position?: number;
+  partnerType?: BrandUpdatePartnerType;
 }
 
 export interface AdminCategory {

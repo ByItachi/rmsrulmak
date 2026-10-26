@@ -343,6 +343,8 @@ export const GetProductResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "logoUrl": zod.string(),
+  "position": zod.number().int(),
+  "partnerType": zod.string(),
   "productCount": zod.number().int()
 }),
   "category": zod.object({
@@ -390,6 +392,8 @@ export const ListBrandsResponseItem = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "logoUrl": zod.string(),
+  "position": zod.number().int(),
+  "partnerType": zod.string(),
   "productCount": zod.number().int()
 })
 export const ListBrandsResponse = zod.array(ListBrandsResponseItem)
@@ -558,6 +562,8 @@ export const ListAdminBrandsResponseItem = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "logoUrl": zod.string(),
+  "position": zod.number().int(),
+  "partnerType": zod.string(),
   "productCount": zod.number().int()
 })
 export const ListAdminBrandsResponse = zod.array(ListAdminBrandsResponseItem)
@@ -580,7 +586,9 @@ export const CreateBrandBody = zod.object({
   "slug": zod.string().max(createBrandBodySlugMax).optional(),
   "name": zod.string().min(1).max(createBrandBodyNameMax),
   "description": zod.string().max(createBrandBodyDescriptionMax).optional(),
-  "logoUrl": zod.string().max(createBrandBodyLogoUrlMax).optional()
+  "logoUrl": zod.string().max(createBrandBodyLogoUrlMax).optional(),
+  "position": zod.number().int().optional(),
+  "partnerType": zod.enum(['distributor', 'import']).optional()
 })
 
 export const CreateBrandResponse = zod.object({
@@ -589,6 +597,8 @@ export const CreateBrandResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "logoUrl": zod.string(),
+  "position": zod.number().int(),
+  "partnerType": zod.string(),
   "productCount": zod.number().int()
 })
 
@@ -617,7 +627,9 @@ export const UpdateBrandBody = zod.object({
   "slug": zod.string().max(updateBrandBodySlugMax).optional(),
   "name": zod.string().min(1).max(updateBrandBodyNameMax).optional(),
   "description": zod.string().max(updateBrandBodyDescriptionMax).optional(),
-  "logoUrl": zod.string().max(updateBrandBodyLogoUrlMax).optional()
+  "logoUrl": zod.string().max(updateBrandBodyLogoUrlMax).optional(),
+  "position": zod.number().int().optional(),
+  "partnerType": zod.enum(['distributor', 'import']).optional()
 })
 
 export const UpdateBrandResponse = zod.object({
@@ -626,6 +638,8 @@ export const UpdateBrandResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "logoUrl": zod.string(),
+  "position": zod.number().int(),
+  "partnerType": zod.string(),
   "productCount": zod.number().int()
 })
 

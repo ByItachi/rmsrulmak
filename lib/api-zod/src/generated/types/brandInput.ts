@@ -5,6 +5,7 @@
  * RMS Rulmak kurumsal web sitesi, halka açık kataloglar ve yönetici API sözleşmesi
  * OpenAPI spec version: 0.1.0
  */
+import type { BrandInputPartnerType } from './brandInputPartnerType';
 
 export interface BrandInput {
   /** @maxLength 80 */
@@ -18,4 +19,6 @@ export interface BrandInput {
   description?: string;
   /** @maxLength 500 */
   logoUrl?: string;
+  position?: number;
+  partnerType?: BrandInputPartnerType;
 }

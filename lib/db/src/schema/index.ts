@@ -20,6 +20,8 @@ export const brandsTable = pgTable("brands", {
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
   logoUrl: text("logo_url").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  partnerType: text("partner_type").notNull().default("import"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

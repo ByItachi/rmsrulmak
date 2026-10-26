@@ -251,6 +251,7 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
   const [description, setDescription] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [position, setPosition] = useState(0);
+  const [partnerType, setPartnerType] = useState<"distributor" | "import">("import");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const data = kind === "brand" ? (listBrands.data ?? []) : kind === "category" ? (listCats.data ?? []) : (listSectors.data ?? []);
@@ -267,7 +268,7 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
     if (!name) return;
     const common = { name, description };
     if (kind === "brand") {
-      const payload = { ...common, logoUrl };
+      const payload = { ...common, logoUrl, position, partnerType };
       if (editingId) { await updateBrand.mutateAsync({ id: Number(editingId), data: payload }); } else { await createBrand.mutateAsync({ data: payload }); }
     } else if (kind === "category") {
       if (editingId) { await updateCat.mutateAsync({ id: Number(editingId), data: common }); } else { await createCat.mutateAsync({ data: common }); }
@@ -275,7 +276,7 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
       const payload = { ...common, position };
       if (editingId) { await updateSector.mutateAsync({ id: Number(editingId), data: payload }); } else { await createSector.mutateAsync({ data: payload }); }
     }
-    setName(""); setDescription(""); setLogoUrl(""); setPosition(0); setEditingId(null);
+    setName(""); setDescription(""); setLogoUrl(""); setPosition(0); setPartnerType("import"); setEditingId(null);
     invalidate();
   };
 
@@ -283,7 +284,7 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
     setEditingId(item.id);
     setName(item.name);
     setDescription(item.description ?? "");
-    if (kind === "brand") setLogoUrl(item.logoUrl ?? "");
+    if (kind === "brand") { setLogoUrl(item.logoUrl ?? ""); setPosition(item.position ?? 0); setPartnerType(item.partnerType ?? "import"); }
     if (kind === "sector") setPosition(item.position ?? 0);
   };
 
@@ -301,10 +302,12 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Ad"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} required /></Field>
         {kind === "brand" && <Field label="Logo yolu"><input className={inputCls} value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="/brand/reference/idc-logo.jpg" /></Field>}
+        {kind === "brand" && <Field label="Sıra"><input type="number" min={0} className={inputCls} value={position} onChange={(e) => setPosition(Number(e.target.value))} /></Field>}
+        {kind === "brand" && <Field label="Ortaklık tipi"><select className={inputCls} value={partnerType} onChange={(e) => setPartnerType(e.target.value as "distributor" | "import")}><option value="distributor">Resmi Distribütörlük</option><option value="import">Doğrudan İthalat</option></select></Field>}
         {kind === "sector" && <Field label="Sıra"><input type="number" min={0} className={inputCls} value={position} onChange={(e) => setPosition(Number(e.target.value))} /></Field>}
         <div className="sm:col-span-2"><Field label="Açıklama"><textarea rows={3} className={inputCls} value={description} onChange={(e) => setDescription(e.target.value)} /></Field></div>
         <div className="flex items-center justify-end gap-3 sm:col-span-2">
-          {editingId && <button type="button" onClick={() => { setEditingId(null); setName(""); setDescription(""); setLogoUrl(""); setPosition(0); }} className="rounded-md px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted">Vazgeç</button>}
+          {editingId && <button type="button" onClick={() => { setEditingId(null); setName(""); setDescription(""); setLogoUrl(""); setPosition(0); setPartnerType("import"); }} className="rounded-md px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted">Vazgeç</button>}
           <button type="submit" disabled={listBrands.isPending || listCats.isPending} className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"><Save size={15} /> {editingId ? "Güncelle" : "Ekle"}</button>
         </div>
       </form>
@@ -312,7 +315,7 @@ function SimpleItemsAdmin({ kind }: { kind: "brand" | "category" | "sector" }) {
     <Section title={`${labels}lar (${data.length})`}>
       <div className="space-y-2.5">
         {data.map((item: any) => <Row key={item.id} onEdit={() => startEdit(item)} onDelete={() => remove(item.id, item.name)}>
-          <div className="flex items-center gap-3"><p className="font-semibold">{item.name}</p>{item.productCount != null && <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">{item.productCount} ürün</span>}</div>
+          <div className="flex items-center gap-3"><p className="font-semibold">{item.name}</p>{kind === "brand" && <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">{item.partnerType === "distributor" ? "Resmi Distribütörlük" : "Doğrudan İthalat"}</span>}{item.productCount != null && <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">{item.productCount} ürün</span>}</div>
         </Row>)}
         {data.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Henüz kayıt yok.</p>}
       </div>

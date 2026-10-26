@@ -12,5 +12,7 @@ export interface Brand {
   name: string;
   description: string;
   logoUrl: string;
+  position: number;
+  partnerType: string;
   productCount: number;
 }

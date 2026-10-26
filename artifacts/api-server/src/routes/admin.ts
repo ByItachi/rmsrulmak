@@ -126,6 +126,8 @@ async function brandDto(brandId: number) {
     name: row.brand.name,
     description: row.brand.description,
     logoUrl: row.brand.logoUrl,
+    position: row.brand.position,
+    partnerType: row.brand.partnerType,
     productCount: Number(row.productCount),
   };
 }
@@ -136,7 +138,7 @@ router.get("/admin/brands", async (_req, res): Promise<void> => {
     .from(brandsTable)
     .leftJoin(productsTable, eq(productsTable.brandId, brandsTable.id))
     .groupBy(brandsTable.id)
-    .orderBy(asc(brandsTable.name));
+    .orderBy(asc(brandsTable.position), asc(brandsTable.name));
   res.json(
     ListAdminBrandsResponse.parse(
       rows.map(({ brand, productCount }) => ({
@@ -145,6 +147,8 @@ router.get("/admin/brands", async (_req, res): Promise<void> => {
         name: brand.name,
         description: brand.description,
         logoUrl: brand.logoUrl,
+        position: brand.position,
+        partnerType: brand.partnerType,
         productCount: Number(productCount),
       })),
     ),

@@ -1914,6 +1914,10 @@ components:
           type: string
         logoUrl:
           type: string
+        position:
+          type: integer
+        partnerType:
+          type: string
         productCount:
           type: integer
       required:
@@ -1922,6 +1926,8 @@ components:
         - name
         - description
         - logoUrl
+        - position
+        - partnerType
         - productCount
     DashboardSummary:
       type: object
@@ -2093,6 +2099,10 @@ components:
           type: string
         logoUrl:
           type: string
+        position:
+          type: integer
+        partnerType:
+          type: string
         productCount:
           type: integer
       required:
@@ -2101,6 +2111,8 @@ components:
         - name
         - description
         - logoUrl
+        - position
+        - partnerType
         - productCount
     BrandInput:
       type: object
@@ -2118,6 +2130,11 @@ components:
         logoUrl:
           type: string
           maxLength: 500
+        position:
+          type: integer
+        partnerType:
+          type: string
+          enum: [distributor, import]
       required:
         - name
     BrandUpdate:
@@ -2136,6 +2153,11 @@ components:
         logoUrl:
           type: string
           maxLength: 500
+        position:
+          type: integer
+        partnerType:
+          type: string
+          enum: [distributor, import]
     AdminCategory:
       type: object
       properties:

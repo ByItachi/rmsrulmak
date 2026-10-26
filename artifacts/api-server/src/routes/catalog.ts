@@ -68,6 +68,8 @@ function brandDto(brand: Brand, productCount: number) {
     name: brand.name,
     description: brand.description,
     logoUrl: brand.logoUrl || "/brand/rulmak-icon-red.png",
+    position: brand.position,
+    partnerType: brand.partnerType,
     productCount,
   };
 }
@@ -247,8 +249,7 @@ router.get("/brands", async (_req, res): Promise<void> => {
     .from(brandsTable)
     .leftJoin(productsTable, eq(productsTable.brandId, brandsTable.id))
     .groupBy(brandsTable.id)
-    .orderBy(asc(brandsTable.name));
-
+    .orderBy(asc(brandsTable.position), asc(brandsTable.name));
   res.json(
     ListBrandsResponse.parse(
       rows.map(({ brand, productCount }) =>
