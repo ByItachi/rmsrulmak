@@ -396,6 +396,10 @@ const referenceBrands = [
   { name: 'Schaeffler', image: '/brand/reference/schaeffler-logo.jpg', href: '/kataloglar/teknik/schaeffler' },
   { name: 'Koyo', image: '/brand/reference/koyo-logo.jpg', href: '/kataloglar/teknik/koyo' },
   { name: 'RBC', image: '/brand/reference/rbc-logo.jpg', href: '/kataloglar/teknik/rbc' },
+  { name: 'Linmax', image: '/brand/reference/linmax-logo.jpg', href: '/kataloglar/teknik/linmax' },
+  { name: 'IKO', image: '/brand/reference/iko-logo.jpg', href: '/kataloglar/teknik/iko' },
+  { name: 'JNS', image: '/brand/reference/jns-logo.jpg', href: '/kataloglar/teknik/jns' },
+  { name: 'Bower', image: '/brand/reference/bower-logo.jpg', href: '/kataloglar/teknik/bower' },
 ] as const;
 
 function ReferenceHeroSlider() {
@@ -481,6 +485,10 @@ function ReferenceHeroSlider() {
 
 function ReferenceBrandSlider() {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const brandsQuery = useListBrands();
+  const stripBrands: { name: string; image: string; href: string }[] = brandsQuery.data?.length
+    ? brandsQuery.data.map((b) => ({ name: b.name, image: b.logoUrl || `/brand/reference/${b.slug}-logo.jpg`, href: `/kataloglar/teknik/${b.slug}` }))
+    : [...referenceBrands];
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -501,7 +509,7 @@ function ReferenceBrandSlider() {
     <div className="mx-auto max-w-[88rem] py-4">
       <div ref={viewportRef} className="brand-slider-viewport">
         <div className="brand-slider-track">
-          {referenceBrands.map((brand) => <Link key={brand.name} href={brand.href} data-testid={`link-brand-slider-${brand.name.toLowerCase()}`} className="brand-slider-card group flex flex-col items-center justify-center rounded-lg bg-white p-4 transition hover:bg-muted/40">
+          {stripBrands.map((brand) => <Link key={brand.name} href={brand.href} data-testid={`link-brand-slider-${brand.name.toLowerCase()}`} className="brand-slider-card group flex flex-col items-center justify-center rounded-lg bg-white p-4 transition hover:bg-muted/40">
             <div className="flex h-24 w-full items-center justify-center sm:h-28">
               <img src={brand.image} alt={`${brand.name} logo`} width={1000} height={300} className="h-full w-full max-w-[240px] object-contain transition duration-300 group-hover:scale-105 sm:max-w-[260px]" style={{ mixBlendMode: 'multiply' }} loading="lazy" />
             </div>
