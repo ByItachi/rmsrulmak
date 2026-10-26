@@ -24,6 +24,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
   const [zoom, setZoom] = useState(1);
   const [bookKey, setBookKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<any>(null);
   const aspectRef = useRef(1.3);
@@ -55,6 +56,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
     setNotice('');
     setSize(null);
     setZoom(1);
+    setCurrentPage(0);
     setBookKey((k) => k + 1);
 
     (async () => {
@@ -125,6 +127,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
     if (dir > 0) pf.flipNext();
     else pf.flipPrev();
   };
+  const onFlip = (e: any) => setCurrentPage(e?.data ?? 0);
   const fullscreen = () => {
     const el = boxRef.current;
     if (!el) return;
@@ -155,13 +158,14 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
             <button type="button" onClick={zoomIn} disabled={zoom >= ZOOM_MAX} aria-label="Yakınlaştır" data-testid="flip-zoom-in" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted disabled:opacity-40"><ZoomIn size={16} /></button>
             <span className="mx-1 h-5 w-px bg-border" />
             <button type="button" onClick={() => flip(-1)} aria-label="Önceki sayfa" data-testid="flip-prev" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><ChevronLeft size={18} /></button>
+            <span className="min-w-[72px] text-center text-xs font-bold text-foreground" data-testid="flip-page-indicator">{Math.min(currentPage + 1, pages.length)} / {pages.length}</span>
             <button type="button" onClick={() => flip(1)} aria-label="Sonraki sayfa" data-testid="flip-next" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><ChevronRight size={18} /></button>
             <span className="mx-1 h-5 w-px bg-border" />
             <button type="button" onClick={fullscreen} aria-label="Tam ekran" data-testid="flip-fullscreen" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Maximize size={16} /></button>
             <a href={src} download target="_blank" rel="noopener noreferrer" aria-label="PDF indir" data-testid="flip-download" className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"><Download size={17} /></a>
           </div>
-          <div className="w-full overflow-auto" style={{ height: Math.min(Math.round(size.h * zoom) + 44, isFullscreen ? window.innerHeight - 56 : Infinity) }}>
-            <div style={{ width: size.w * 2 * zoom, height: size.h * zoom, transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+          <div className="flex w-full justify-center overflow-auto" style={{ height: Math.min(Math.round(size.h * zoom) + 44, isFullscreen ? window.innerHeight - 56 : Infinity) }}>
+            <div style={{ width: size.w * 2 * zoom, height: size.h * zoom, transform: `scale(${zoom})`, transformOrigin: 'top center', flexShrink: 0 }}>
               <HTMLFlipBook
                 key={String(size.w) + '-' + String(size.h) + '-' + String(zoom)}
                 ref={bookRef}
@@ -188,6 +192,7 @@ export function PdfFlipbook({ src, title }: { src: string; title: string }) {
                 usePortrait={false}
                 autoSize={false}
                 clickEventForward
+                onFlip={onFlip}
               >
                 {pages.map((p, i) => (
                   <div key={i} data-testid={`flip-page-${i + 1}`} style={{ width: size.w, height: size.h, overflow: 'hidden', background: '#fff' }} className="flex items-center justify-center">
